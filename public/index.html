@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     BARBERSLIM — INDEX.HTML (página principal, SPA)
+     Cada <section class="view"> é uma tela mostrada/ocultada via
+     JavaScript (atributo hidden). A lógica está em js/app.js e os
+     estilos em css/styles.css. Este arquivo é só o esqueleto.
+     ============================================================ -->
+<html lang="pt-BR">
+<head>
+<!-- Metadados: título, descrição e autor (SEO). O viewport é
+     obrigatório para o site ficar responsivo no celular. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BarberSlim — Barbearia | Agendamento Online</title>
+<meta name="description" content="Marque sua vez na BarberSlim em menos de 1 minuto. Escolha o barbeiro, o serviço e o horário — sem ligar, sem esperar na porta.">
+<meta name="keywords" content="barbearia, agendamento online, corte de cabelo, barba, BarberSlim, barbeiro São Paulo">
+<meta name="author" content="BarberSlim">
+<!-- Open Graph -->
+<meta property="og:title" content="BarberSlim — Sua vez, sem fila">
+<meta property="og:description" content="Barbearia de antigamente com agenda de hoje. Marque em menos de 1 minuto.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- Link para pular direto ao conteúdo (acessibilidade) -->
+<a href="#conteudo-principal" class="skip-link">Pular para o conteúdo</a>
+
+<!-- Barra de carregamento no topo (microinteração) -->
+<div id="loading-bar" class="loading-bar" aria-hidden="true"></div>
+
+<!-- Filtro SVG para modo daltônico (deuteranopia) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="filtro-deuteranopia">
+      <feColorMatrix type="matrix" values="
+        0.625 0.375 0     0 0
+        0.7   0.3   0     0 0
+        0     0.3   0.7   0 0
+        0     0     0     1 0"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ==================== CABEÇALHO / NAVEGAÇÃO ==================== -->
+<!-- Cabeçalho fixo (sticky) com a logo, o menu de navegação e os botões
+     de ação (Histórico, Sair, Entrar). Os itens do menu usam data-scroll
+     para rolar até a seção; o botão Entrar usa data-nav para trocar de tela. -->
+<header class="header" id="topo">
+  <div class="header__inner">
+    <a href="#" class="logo" data-nav="home" aria-label="BarberSlim - Página inicial">
+      <img src="logo.png" alt="BarberSlim" class="logo__img">
+    </a>
+
+    <nav class="nav" id="nav-principal" aria-label="Navegação principal">
+      <ul class="nav__lista">
+        <li><a href="#sobre" data-scroll="sobre">Sobre Nós</a></li>
+        <li><a href="#servicos" data-scroll="servicos">Serviços</a></li>
+        <li><a href="#local" data-scroll="local">Local</a></li>
+        <li><a href="#contato" data-scroll="contato">Contato</a></li>
+      </ul>
+    </nav>
+
+    <div class="header__acoes">
+      <button type="button" class="btn btn--outline btn--sm" data-nav="historico" id="btn-historico-nav" hidden>
+        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Histórico
+      </button>
+      <button type="button" class="btn btn--outline btn--sm" id="btn-sair" hidden>
+        <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sair
+      </button>
+      <button type="button" class="btn btn--gold btn--sm" data-nav="login" id="btn-entrar-nav">
+        <i class="fas fa-user" aria-hidden="true"></i> Entrar
+      </button>
+      <button type="button" class="hamburguer" id="btn-hamburguer" aria-expanded="false" aria-controls="nav-principal" aria-label="Abrir menu de navegação">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== CONTEÚDO PRINCIPAL (VIEWS) ==================== -->
+<!-- <main> agrupa todas as "telas". Apenas a view ativa não tem o atributo
+     hidden; as demais ficam ocultas. O JS (app.js) controla isso. -->
+<main id="conteudo-principal">
+
+  <!-- ---------- VIEW: HOME ---------- -->
+  <section class="view" data-view="home" id="view-home">
+
+    <!-- HERO com slider -->
+    <section class="hero" aria-roledescription="carrossel" aria-label="Destaques da barbearia">
+      <div class="hero__fundo" aria-hidden="true"></div>
+      <div class="hero__conteudo">
+        <p class="eyebrow reveal-item" style="--atraso:0ms">— BARBERSLIM —</p>
+        <div id="hero-slider" class="hero__slider">
+          <div class="hero__slide is-ativo" data-slide="0">
+            <h1 class="reveal-item" style="--atraso:80ms">Sem fila.<br>Sem ligar.<br>Sem esperar.</h1>
+            <p class="hero__subtitulo reveal-item" style="--atraso:220ms">"Escolha o barbeiro, o serviço e o horário — sua vez já sai marcada."</p>
+          </div>
+          <div class="hero__slide" data-slide="1">
+            <h1>Navalha certeira,<br>agenda sem estresse</h1>
+            <p class="hero__subtitulo">"Ofício de barbeiro com o mesmo cuidado que você merece."</p>
+          </div>
+          <div class="hero__slide" data-slide="2">
+            <h1>Marque em<br>menos de 1 minuto</h1>
+            <p class="hero__subtitulo">"Toque, escolha o horário e pronto. Simples assim."</p>
+          </div>
+        </div>
+        <div class="hero__acoes reveal-item" style="--atraso:380ms">
+          <button type="button" class="btn btn--gold btn--lg" data-nav="agendamento">
+            <i class="fas fa-scissors" aria-hidden="true"></i> Agendar Meu Horário
+          </button>
+          <a href="#social-proof" class="hero__link-secundario" data-scroll="social-proof">Ver quem já confia <i class="fas fa-arrow-down" aria-hidden="true"></i></a>
+        </div>
+        <div class="hero__pontos" role="tablist" aria-label="Selecionar destaque">
+          <button class="hero__ponto is-ativo" data-ponto="0" role="tab" aria-selected="true" aria-label="Destaque 1"></button>
+          <button class="hero__ponto" data-ponto="1" role="tab" aria-selected="false" aria-label="Destaque 2"></button>
+          <button class="hero__ponto" data-ponto="2" role="tab" aria-selected="false" aria-label="Destaque 3"></button>
+        </div>
+      </div>
+      <div class="barber-pole" aria-hidden="true">
+        <div class="barber-pole__tubo"><div class="barber-pole__listras"></div></div>
+        <div class="barber-pole__topo"></div>
+        <div class="barber-pole__base"></div>
+      </div>
+    </section>
+
+    <!-- PROVA SOCIAL -->
+    <section class="secao secao--social-proof reveal-secao" id="social-proof">
+      <div class="secao__inner">
+        <div class="grade-social-proof">
+          <div class="social-proof__item">
+            <span class="social-proof__numero" data-contar="12">0</span>
+            <span class="social-proof__rotulo">Anos de ofício</span>
+          </div>
+          <div class="social-proof__item">
+            <span class="social-proof__numero" data-contar="3400" data-sufixo="+">0</span>
+            <span class="social-proof__rotulo">Cortes por ano</span>
+          </div>
+          <div class="social-proof__item">
+            <span class="social-proof__numero" data-contar="4.9" data-decimal="1">0</span>
+            <span class="social-proof__rotulo">Nota média dos clientes</span>
+          </div>
+          <div class="social-proof__item">
+            <span class="social-proof__numero" data-contar="60" data-sufixo="s">0</span>
+            <span class="social-proof__rotulo">Para marcar sua vez</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIVISOR ORNAMENTAL -->
+    <div class="divisor" role="separator" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+
+    <!-- NOSSA HISTÓRIA -->
+    <section class="secao secao--historia reveal-secao" id="sobre">
+      <div class="secao__inner secao__inner--duas-colunas secao__inner--assimetrica">
+        <div>
+          <p class="rotulo">Sobre Nós</p>
+          <h2 class="titulo-secao">Nascemos numa sala de aula. Crescemos na cadeira do barbeiro.</h2>
+          <p>A BarberSlim começou como um projeto de conclusão de curso e virou uma barbearia de verdade: uma equipe que preferiu testar a ideia na prática em vez de deixá-la só no papel.</p>
+          <p>O resultado é o encontro de dois mundos — a barbearia de esquina, com navalha, couro e conversa boa, e a praticidade de marcar sua vez em segundos, sem telefonema e sem fila na porta.</p>
+          <ul class="lista-check">
+            <li><i class="fas fa-check" aria-hidden="true"></i> Barbeiros com média de 8+ anos de bancada</li>
+            <li><i class="fas fa-check" aria-hidden="true"></i> Ambiente clássico, ferramentas sempre higienizadas</li>
+            <li><i class="fas fa-check" aria-hidden="true"></i> Você escolhe o horário — a gente cumpre</li>
+          </ul>
+        </div>
+        <div class="cartao-citacao">
+          <i class="fas fa-quote-left" aria-hidden="true"></i>
+          <p>"Barbearia de antigamente, agenda de hoje em dia."</p>
+          <span>— Equipe BarberSlim</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="divisor" role="separator" aria-hidden="true"><span></span><i class="fas fa-scissors"></i><span></span></div>
+
+    <!-- SERVIÇOS -->
+    <section class="secao reveal-secao" id="servicos">
+      <div class="secao__inner">
+        <p class="rotulo" style="text-align:center">Serviços</p>
+        <h2 class="titulo-secao titulo-secao--centro">Três motivos para trocar de barbearia</h2>
+        <div class="grade-cards">
+          <article class="card reveal-item">
+            <div class="card__icone"><i class="fas fa-scissors" aria-hidden="true"></i></div>
+            <h3>Corte que dura a semana toda</h3>
+            <p>Do social ao degradê navalhado, com acabamento fino e atenção a cada detalhe — não só no dia, na semana inteira.</p>
+          </article>
+          <article class="card reveal-item" style="--atraso:120ms">
+            <div class="card__icone"><i class="fas fa-shield-halved" aria-hidden="true"></i></div>
+            <h3>Higiene que você vê</h3>
+            <p>Material esterilizado a cada cliente, ambiente cuidado e profissionais que levam o ofício a sério.</p>
+          </article>
+          <article class="card reveal-item" style="--atraso:240ms">
+            <div class="card__icone"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
+            <h3>Zero fila, zero ligação</h3>
+            <p>Escolha barbeiro, serviço e horário livre direto pelo site. Sua vez fica garantida antes de você sair de casa.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div class="divisor" role="separator" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+
+    <!-- LOCAL -->
+    <section class="secao secao--local" id="local">
+      <div class="secao__inner secao__inner--duas-colunas">
+        <div>
+          <p class="rotulo">Onde Estamos</p>
+          <h2 class="titulo-secao">Venha nos visitar</h2>
+          <p><i class="fas fa-location-dot" aria-hidden="true"></i> Etec Jacinto Ferreira de Sá — Av. Antônio de Almeida Leite, 913 — Ourinhos/SP</p>
+          <p><i class="fas fa-clock" aria-hidden="true"></i> Segunda a sábado, das 09h às 20h</p>
+          <p><i class="fas fa-phone" aria-hidden="true"></i> (14) 99662-8499</p>
+          <p><i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp: (14) 99662-8499</p>
+          <a class="btn btn--outline" href="https://www.google.com/maps/search/?api=1&amp;query=Etec+Jacinto+Ferreira+de+S%C3%A1%2C+Av.+Ant%C3%B4nio+de+Almeida+Leite%2C+913%2C+Jardim+Paulista%2C+Ourinhos+-+SP" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-diamond-turn-right" aria-hidden="true"></i> Como Chegar
+          </a>
+        </div>
+        <div class="mapa-placeholder" role="region" aria-label="Mapa com a localização da barbearia na Etec Jacinto Ferreira de Sá, Ourinhos/SP">
+          <iframe title="Mapa: BarberSlim na Etec Jacinto Ferreira de Sá, Ourinhos/SP"
+            src="https://www.google.com/maps?q=Etec%20Jacinto%20Ferreira%20de%20S%C3%A1%2C%20Av.%20Ant%C3%B4nio%20de%20Almeida%20Leite%2C%20913%2C%20Jardim%20Paulista%2C%20Ourinhos%20-%20SP&z=16&hl=pt-BR&output=embed"
+            width="100%" height="100%" style="border:0" allowfullscreen loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <div class="divisor" role="separator" aria-hidden="true"><span></span><i class="fas fa-scissors"></i><span></span></div>
+
+    <!-- DEPOIMENTOS -->
+    <section class="secao reveal-secao" id="depoimentos">
+      <div class="secao__inner">
+        <p class="rotulo" style="text-align:center">Quem já passou pela cadeira</p>
+        <h2 class="titulo-secao titulo-secao--centro">O que dizem sobre a BarberSlim</h2>
+        <div class="grade-depoimentos">
+          <article class="depoimento reveal-item">
+            <div class="depoimento__estrelas" aria-label="5 de 5 estrelas">★★★★★</div>
+            <p>"Marquei pelo celular no intervalo do trabalho e não esperei nem 5 minutos na cadeira. Corte impecável."</p>
+            <div class="depoimento__autor">
+              <span class="depoimento__avatar">RC</span>
+              <div><strong>Rafael Costa</strong><small>Cliente desde 2023</small></div>
+            </div>
+          </article>
+          <article class="depoimento reveal-item" style="--atraso:120ms">
+            <div class="depoimento__estrelas" aria-label="5 de 5 estrelas">★★★★★</div>
+            <p>"Já tentei três barbearias na região. Essa foi a única em que o horário marcado foi realmente respeitado."</p>
+            <div class="depoimento__autor">
+              <span class="depoimento__avatar">GM</span>
+              <div><strong>Gustavo Mendes</strong><small>Cliente desde 2022</small></div>
+            </div>
+          </article>
+          <article class="depoimento reveal-item" style="--atraso:240ms">
+            <div class="depoimento__estrelas" aria-label="4.5 de 5 estrelas">★★★★½</div>
+            <p>"Clima de barbearia antiga com organização de agenda moderna. Consegui remarcar sem nenhuma dor de cabeça."</p>
+            <div class="depoimento__autor">
+              <span class="depoimento__avatar">TL</span>
+              <div><strong>Thiago Lopes</strong><small>Cliente desde 2024</small></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="secao secao--faq reveal-secao" id="faq">
+      <div class="secao__inner secao__inner--estreita">
+        <p class="rotulo" style="text-align:center">Dúvidas Frequentes</p>
+        <h2 class="titulo-secao titulo-secao--centro">Antes de marcar sua vez</h2>
+        <div class="acordeao" id="acordeao-faq">
+          <div class="acordeao__item">
+            <button type="button" class="acordeao__pergunta" aria-expanded="false">
+              <span>Preciso criar conta para agendar?</span>
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+            <div class="acordeao__resposta" hidden>
+              <p>Não. Você pode agendar como visitante informando só seu nome e WhatsApp. Criar conta é opcional e serve para acompanhar seu histórico de cortes.</p>
+            </div>
+          </div>
+          <div class="acordeao__item">
+            <button type="button" class="acordeao__pergunta" aria-expanded="false">
+              <span>Posso escolher um barbeiro específico?</span>
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+            <div class="acordeao__resposta" hidden>
+              <p>Sim. Na tela de agendamento você escolhe o barbeiro antes do horário — os horários mostrados já consideram a agenda dele.</p>
+            </div>
+          </div>
+          <div class="acordeao__item">
+            <button type="button" class="acordeao__pergunta" aria-expanded="false">
+              <span>E se eu precisar cancelar ou remarcar?</span>
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+            <div class="acordeao__resposta" hidden>
+              <p>É só chamar no WhatsApp com o máximo de antecedência possível para liberarmos o horário para outro cliente.</p>
+            </div>
+          </div>
+          <div class="acordeao__item">
+            <button type="button" class="acordeao__pergunta" aria-expanded="false">
+              <span>Quais formas de pagamento vocês aceitam?</span>
+              <i class="fas fa-plus" aria-hidden="true"></i>
+            </button>
+            <div class="acordeao__resposta" hidden>
+              <p>Pix, cartão de débito e crédito, e dinheiro. O pagamento é feito na barbearia, após o atendimento.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTATO / CTA -->
+    <section class="secao secao--cta reveal-secao" id="contato">
+      <div class="secao__inner" style="text-align:center">
+        <h2 class="titulo-secao titulo-secao--centro">Sua próxima vez já pode estar marcada</h2>
+        <p>Leva menos de 1 minuto — e você ainda escolhe o barbeiro.</p>
+        <button type="button" class="btn btn--gold btn--lg" data-nav="agendamento">
+          <i class="fas fa-scissors" aria-hidden="true"></i> Agendar Meu Horário
+        </button>
+      </div>
+    </section>
+
+    <!-- RODAPÉ -->
+    <footer class="rodape">
+      <div class="rodape__inner">
+        <div class="logo logo--rodape">
+          <img src="logo.png" alt="Logo BarberSlim" class="rodape__logo">
+        </div>
+        <p class="rodape__frase">"O corte passa. A confiança na cadeira, não."</p>
+        <div class="rodape__redes">
+          <a href="https://www.instagram.com/barberslimsp" aria-label="Instagram da BarberSlim (@barberslimsp)" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+          <a href="https://wa.me/5514996628499" aria-label="WhatsApp da BarberSlim (14) 99662-8499" target="_blank" rel="noopener noreferrer"><i class="fab fa-whatsapp" aria-hidden="true"></i></a>
+        </div>
+        <p class="rodape__copy">&copy; <span id="ano-atual"></span> BarberSlim — Projeto acadêmico (TCC). Todos os direitos reservados.</p>
+        <button type="button" class="link-admin" data-nav="admin-login">Acesso administrativo</button>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ---------- VIEW: LOGIN ---------- -->
+  <section class="view" data-view="login" id="view-login" hidden>
+    <div class="pagina-auth">
+      <form class="cartao-auth" id="form-login" novalidate>
+        <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+        <h2 class="titulo-secao titulo-secao--centro">Entrar</h2>
+        <p class="texto-confianca"><i class="fas fa-lock" aria-hidden="true"></i> Seus dados ficam apenas na barbearia.</p>
+
+        <div class="abas-auth" role="tablist">
+          <button type="button" class="aba-auth is-ativa" data-aba="conta" role="tab" aria-selected="true">Já tenho conta</button>
+          <button type="button" class="aba-auth" data-aba="visitante" role="tab" aria-selected="false">Entrar como visitante</button>
+        </div>
+
+        <div class="aba-conteudo" data-aba-conteudo="conta">
+          <label class="campo">
+            <span>E-mail</span>
+            <input type="email" name="email" id="login-email" autocomplete="email" required>
+            <small class="erro" id="erro-login-email" role="alert"></small>
+          </label>
+          <label class="campo">
+            <span>Senha</span>
+            <div class="campo-senha">
+              <input type="password" name="senha" id="login-senha" autocomplete="current-password" required>
+              <button type="button" class="botao-olho" data-toggle-senha="login-senha" aria-label="Mostrar senha"><i class="fas fa-eye" aria-hidden="true"></i></button>
+            </div>
+            <small class="erro" id="erro-login-senha" role="alert"></small>
+          </label>
+          <label class="campo campo--checkbox">
+            <input type="checkbox" name="lembrar" id="login-lembrar">
+            <span>Lembrar de mim</span>
+          </label>
+          <button type="submit" class="btn btn--gold btn--bloco">Entrar</button>
+        </div>
+
+        <div class="aba-conteudo" data-aba-conteudo="visitante" hidden>
+          <label class="campo">
+            <span>Nome</span>
+            <input type="text" name="nomeVisitante" id="visitante-nome">
+            <small class="erro" id="erro-visitante-nome" role="alert"></small>
+          </label>
+          <label class="campo">
+            <span>WhatsApp</span>
+            <input type="tel" name="whatsappVisitante" id="visitante-whatsapp" placeholder="(11) 90000-0000">
+            <small class="erro" id="erro-visitante-whatsapp" role="alert"></small>
+          </label>
+          <button type="button" class="btn btn--gold btn--bloco" id="btn-entrar-visitante">Continuar como visitante</button>
+        </div>
+
+        <p class="rodape-form">Não tem conta? <button type="button" class="link" data-nav="cadastro">Cadastre-se</button></p>
+        <p class="mensagem-status" id="msg-login" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: LOGIN ADMIN ---------- -->
+  <section class="view" data-view="admin-login" id="view-admin-login" hidden>
+    <div class="pagina-auth">
+      <form class="cartao-auth" id="form-admin-login" novalidate>
+        <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+        <h2 class="titulo-secao titulo-secao--centro">Painel Administrativo</h2>
+        <p class="texto-confianca"><i class="fas fa-user-shield" aria-hidden="true"></i> Área restrita para a equipe BarberSlim.</p>
+        <label class="campo">
+          <span>E-mail administrativo</span>
+          <input type="email" id="admin-email" required>
+        </label>
+        <label class="campo">
+          <span>Senha</span>
+          <input type="password" id="admin-senha" required>
+        </label>
+        <label class="campo campo--checkbox">
+          <input type="checkbox" id="admin-lembrar" checked>
+          <span>Manter conectado (voltar ao painel sem pedir senha)</span>
+        </label>
+        <button type="button" class="btn btn--ghost btn--bloco" id="btn-voltar-admin" hidden>↩ Voltar ao painel (acesso salvo)</button>
+        <button type="submit" class="btn btn--gold btn--bloco">Acessar painel</button>
+        <p class="mensagem-status" id="msg-admin-login" role="status"></p>
+        <p class="links-demo" id="btn-esquecer-admin" hidden><a href="#" id="link-esquecer-admin">Apagar meu acesso salvo e sair</a></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: CADASTRO ---------- -->
+  <section class="view" data-view="cadastro" id="view-cadastro" hidden>
+    <div class="pagina-auth">
+      <form class="cartao-auth" id="form-cadastro" novalidate>
+        <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+        <h2 class="titulo-secao titulo-secao--centro">Criar Conta</h2>
+
+        <label class="campo">
+          <span>Nome completo</span>
+          <input type="text" id="cad-nome" required>
+          <small class="erro" id="erro-cad-nome" role="alert"></small>
+        </label>
+        <label class="campo">
+          <span>E-mail</span>
+          <input type="email" id="cad-email" required>
+          <small class="erro" id="erro-cad-email" role="alert"></small>
+        </label>
+        <label class="campo">
+          <span>WhatsApp</span>
+          <input type="tel" id="cad-whatsapp" placeholder="(11) 90000-0000" required>
+          <small class="erro" id="erro-cad-whatsapp" role="alert"></small>
+        </label>
+        <label class="campo">
+          <span>Senha</span>
+          <div class="campo-senha">
+            <input type="password" id="cad-senha" required>
+            <button type="button" class="botao-olho" data-toggle-senha="cad-senha" aria-label="Mostrar senha"><i class="fas fa-eye" aria-hidden="true"></i></button>
+          </div>
+          <div class="medidor-forca" aria-hidden="true"><span id="barra-forca"></span></div>
+          <small id="texto-forca">Força da senha: —</small>
+          <small class="erro" id="erro-cad-senha" role="alert"></small>
+        </label>
+
+        <button type="submit" class="btn btn--gold btn--bloco">Criar conta</button>
+        <p class="rodape-form">Já tem conta? <button type="button" class="link" data-nav="login">Entrar</button></p>
+        <p class="mensagem-status" id="msg-cadastro" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: AGENDAMENTO ---------- -->
+  <!-- Tela de agendamento: escolher barbeiro, serviços, data e horário.
+       As listas são preenchidas dinamicamente pelo app.js; o botão
+       Confirmar envia o pedido ao banco (via api.js) ou ao localStorage. -->
+  <section class="view" data-view="agendamento" id="view-agendamento" hidden>
+    <div class="secao__inner">
+      <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-scissors" aria-hidden="true"></i><span></span></div>
+      <h2 class="titulo-secao titulo-secao--centro">Agendar Horário</h2>
+
+      <div class="passos" aria-hidden="true">
+        <span class="passo is-ativo" data-passo="1">1. Barbeiro</span>
+        <span class="passo" data-passo="2">2. Serviços</span>
+        <span class="passo" data-passo="3">3. Data &amp; Hora</span>
+        <span class="passo" data-passo="4">4. Pagamento</span>
+      </div>
+
+      <fieldset class="bloco-agenda" id="bloco-barbeiros">
+        <legend>Escolha o barbeiro</legend>
+        <div class="grade-selecao" id="lista-barbeiros"></div>
+      </fieldset>
+
+      <fieldset class="bloco-agenda" id="bloco-servicos">
+        <legend>Escolha o(s) serviço(s)</legend>
+        <div class="grade-selecao" id="lista-servicos"></div>
+      </fieldset>
+
+      <fieldset class="bloco-agenda" id="bloco-data">
+        <legend>Escolha data e horário</legend>
+        <label class="campo campo--data">
+          <span>Data</span>
+          <input type="date" id="agenda-data">
+        </label>
+        <div class="grade-horarios" id="lista-horarios" role="radiogroup" aria-label="Horários disponíveis">
+          <p class="dica">Selecione uma data para ver os horários disponíveis.</p>
+        </div>
+      </fieldset>
+
+      <fieldset class="bloco-agenda" id="bloco-pagamento">
+        <legend>Como deseja pagar?</legend>
+        <div class="grade-pagamento" id="lista-pagamento">
+          <label class="opcao-pagamento">
+            <input type="radio" name="pagamento" value="pix">
+            <span class="opcao-pagamento__icone"><i class="fas fa-qrcode" aria-hidden="true"></i></span>
+            <span class="opcao-pagamento__txt">
+              <strong>PIX</strong>
+              <small>Pague na hora via QR Code / chave</small>
+            </span>
+          </label>
+          <label class="opcao-pagamento">
+            <input type="radio" name="pagamento" value="dinheiro">
+            <span class="opcao-pagamento__icone"><i class="fas fa-money-bill-wave" aria-hidden="true"></i></span>
+            <span class="opcao-pagamento__txt">
+              <strong>Dinheiro</strong>
+              <small>Pague em espécie no atendimento</small>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <p class="mensagem-status" id="msg-agendamento" role="alert"></p>
+
+      <div class="acoes-agenda">
+        <button type="button" class="btn btn--outline" data-nav="home">Cancelar</button>
+        <button type="button" class="btn btn--gold btn--lg" id="btn-confirmar-agendamento">
+          <i class="fas fa-check" aria-hidden="true"></i> Confirmar Agendamento
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: PAGAMENTO PIX ---------- -->
+  <section class="view" data-view="pagamento" id="view-pagamento" hidden>
+    <div class="pagina-auth">
+      <div class="cartao-auth cartao-pagamento">
+        <div class="icone-sucesso icone-pix"><i class="fas fa-qrcode" aria-hidden="true"></i></div>
+        <h2 class="titulo-secao titulo-secao--centro">Pague com PIX</h2>
+        <p class="dica dica--centro">Escaneie o QR Code ou copie o código para pagar.</p>
+
+        <div class="resumo-pagamento" id="resumo-pagamento"></div>
+
+        <div id="div-gerar-pix">
+          <div class="campo campo--pagamento">
+            <label for="pix-email">Seu e-mail (para a cobrança PIX)</label>
+            <input type="email" id="pix-email" autocomplete="email"
+                   placeholder="voce@email.com" aria-describedby="msg-pagamento">
+          </div>
+          <button type="button" class="btn btn--gold btn--lg btn--bloco" id="btn-gerar-pix">
+            <i class="fas fa-qrcode" aria-hidden="true"></i> Gerar pagamento PIX
+          </button>
+        </div>
+
+        <div id="div-pix-pronto" hidden>
+          <div class="pix-qr"><img id="pix-qr" alt="QR Code PIX" loading="lazy"></div>
+
+          <div class="pix-copia">
+            <span class="pix-copia__rotulo">PIX copia e cola</span>
+            <textarea id="pix-copia" rows="3" readonly aria-label="Código PIX copia e cola"></textarea>
+            <button type="button" class="btn btn--outline btn--sm" id="btn-copiar-pix">
+              <i class="fas fa-copy" aria-hidden="true"></i> Copiar código
+            </button>
+          </div>
+        </div>
+
+        <p class="mensagem-status" id="msg-pagamento" role="alert"></p>
+
+        <div class="acoes-agenda">
+          <button type="button" class="btn btn--outline" id="btn-cancelar-pagamento">Cancelar agendamento</button>
+          <button type="button" class="btn btn--gold btn--lg" id="btn-confirmar-pagamento" hidden>
+            <i class="fas fa-check" aria-hidden="true"></i> Já paguei — confirmar agendamento
+          </button>
+        </div>
+        <p class="dica dica--centro dica--pequena" id="dica-pagamento">Após pagar, seu horário é liberado automaticamente.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: CONFIRMAÇÃO ---------- -->
+  <section class="view" data-view="confirmacao" id="view-confirmacao" hidden>
+    <div class="pagina-auth">
+      <div class="cartao-auth cartao-confirmacao">
+        <div class="icone-sucesso"><i class="fas fa-circle-check" aria-hidden="true"></i></div>
+        <h2 class="titulo-secao titulo-secao--centro">Agendamento Confirmado!</h2>
+        <dl class="lista-resumo" id="resumo-agendamento"></dl>
+        <div class="acoes-agenda">
+          <button type="button" class="btn btn--outline" data-nav="historico">Ver Histórico</button>
+          <button type="button" class="btn btn--gold" data-nav="home">Voltar ao Início</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: HISTÓRICO ---------- -->
+  <section class="view" data-view="historico" id="view-historico" hidden>
+    <div class="secao__inner">
+      <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-gem"></i><span></span></div>
+      <h2 class="titulo-secao titulo-secao--centro">Meus Agendamentos</h2>
+      <div id="lista-historico" class="lista-historico"></div>
+    </div>
+  </section>
+
+  <!-- ---------- VIEW: ADMIN ---------- -->
+  <section class="view" data-view="admin" id="view-admin" hidden>
+    <div class="secao__inner">
+      <div class="cabecalho-admin">
+        <div class="divisor divisor--mini" aria-hidden="true"><span></span><i class="fas fa-user-tie"></i><span></span></div>
+        <h2 class="titulo-secao titulo-secao--centro">Painel Administrativo</h2>
+      </div>
+
+      <div class="grade-stats">
+        <div class="stat-card">
+          <span class="stat-card__numero" id="stat-total">0</span>
+          <span class="stat-card__rotulo">Agendamentos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__numero" id="stat-hoje">0</span>
+          <span class="stat-card__rotulo">Hoje</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card__numero" id="stat-clientes">0</span>
+          <span class="stat-card__rotulo">Clientes Cadastrados</span>
+        </div>
+        <button type="button" class="stat-card stat-card--acao" id="btn-abrir-estatisticas">
+          <i class="fas fa-chart-column" aria-hidden="true"></i>
+          <span class="stat-card__rotulo">Ver Estatísticas</span>
+        </button>
+      </div>
+
+      <div class="barra-admin">
+        <button type="button" class="btn btn--outline btn--sm" id="btn-exportar">
+          <i class="fas fa-file-export" aria-hidden="true"></i> Exportar Dados (JSON)
+        </button>
+      </div>
+
+      <div class="tabela-wrapper">
+        <table class="tabela-admin">
+          <caption class="sr-only">Lista de todos os agendamentos</caption>
+          <thead>
+            <tr>
+              <th scope="col">Cliente</th>
+              <th scope="col">Barbeiro</th>
+              <th scope="col">Serviços</th>
+              <th scope="col">Data</th>
+              <th scope="col">Horário</th>
+              <th scope="col">Pagamento</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-tabela-admin"></tbody>
+        </table>
+        <p class="dica" id="admin-vazio" hidden>Nenhum agendamento cadastrado ainda.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== MODAL DE ESTATÍSTICAS ==================== -->
+<!-- Janela (modal) que abre por cima da tela e mostra gráficos de barras
+     com os agendamentos por serviço e por barbeiro. -->
+<div class="modal" id="modal-estatisticas" hidden role="dialog" aria-modal="true" aria-labelledby="titulo-modal-stats">
+  <div class="modal__caixa">
+    <button type="button" class="modal__fechar" id="fechar-modal-stats" aria-label="Fechar estatísticas">
+      <i class="fas fa-xmark" aria-hidden="true"></i>
+    </button>
+    <h2 id="titulo-modal-stats">Estatísticas de Agendamentos</h2>
+    <p class="dica">Agendamentos por serviço</p>
+    <div class="grafico-barras" id="grafico-servicos" role="img" aria-label="Gráfico de barras de agendamentos por serviço"></div>
+    <p class="dica" style="margin-top:1.5rem">Agendamentos por barbeiro</p>
+    <div class="grafico-barras" id="grafico-barbeiros" role="img" aria-label="Gráfico de barras de agendamentos por barbeiro"></div>
+  </div>
+</div>
+
+<!-- ==================== PAINEL DE ACESSIBILIDADE ==================== -->
+<!-- Botão flutuante (FAB) que abre um painel lateral com opções de
+     acessibilidade: alto contraste, texto grande, reduzir movimento,
+     modo daltônico e otimização para leitor de tela. As preferências
+     são salvas no localStorage. -->
+<button type="button" id="btn-acessibilidade" class="fab-acessibilidade" aria-expanded="false" aria-controls="painel-acessibilidade" aria-label="Abrir opções de acessibilidade">
+  <i class="fas fa-universal-access" aria-hidden="true"></i>
+</button>
+
+<aside id="painel-acessibilidade" class="painel-acessibilidade" hidden aria-label="Opções de acessibilidade">
+  <div class="painel-acessibilidade__cabecalho">
+    <h2><i class="fas fa-universal-access" aria-hidden="true"></i> Acessibilidade</h2>
+    <button type="button" id="fechar-acessibilidade" aria-label="Fechar painel de acessibilidade"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+  </div>
+  <div class="painel-acessibilidade__corpo">
+    <label class="opcao-acessibilidade">
+      <span><i class="fas fa-circle-half-stroke" aria-hidden="true"></i> Alto Contraste</span>
+      <input type="checkbox" id="toggle-contraste">
+    </label>
+    <label class="opcao-acessibilidade">
+      <span><i class="fas fa-magnifying-glass-plus" aria-hidden="true"></i> Texto Grande</span>
+      <input type="checkbox" id="toggle-texto-grande">
+    </label>
+    <label class="opcao-acessibilidade">
+      <span><i class="fas fa-person-walking" aria-hidden="true"></i> Reduzir Movimento</span>
+      <input type="checkbox" id="toggle-reduzir-movimento">
+    </label>
+    <label class="opcao-acessibilidade">
+      <span><i class="fas fa-eye-low-vision" aria-hidden="true"></i> Modo Daltônico</span>
+      <input type="checkbox" id="toggle-daltonico">
+    </label>
+    <label class="opcao-acessibilidade">
+      <span><i class="fas fa-headphones" aria-hidden="true"></i> Otimizar Leitor de Tela</span>
+      <input type="checkbox" id="toggle-leitor-tela">
+    </label>
+    <button type="button" class="btn btn--outline btn--bloco" id="btn-resetar-acessibilidade">Restaurar Padrão</button>
+  </div>
+</aside>
+
+<div class="overlay" id="overlay" hidden></div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<!-- IMPORTANTE (integração com o banco de dados):
+     - js/api.js conecta o site ao backend (API REST). Se API_URL estiver
+       definido nele, a aplicação passa a usar o banco de dados real.
+       Deixe API_URL = null para continuar usando localStorage.
+     - O api.js DEVE carregar ANTES do app.js, pois o app.js verifica a
+       existência de window.BarberSlimAPI para decidir o modo.
+     Se não for usar o backend, pode remover a linha do api.js abaixo. -->
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
