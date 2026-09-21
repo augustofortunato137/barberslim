@@ -27,6 +27,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="stylesheet" href="css/styles.css">
+<!-- Tema (escuro/claro): carregado no <head> para aplicar a preferência
+     salva ANTES da página renderizar, evitando o "flash" de tema. -->
+<script src="js/tema.js"></script>
 </head>
 <body>
 
@@ -70,13 +73,13 @@
 
     <div class="header__acoes">
       <button type="button" class="btn btn--outline btn--sm" data-nav="historico" id="btn-historico-nav" hidden>
-        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Histórico
+        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> <span class="rotulo-btn">Histórico</span>
       </button>
       <button type="button" class="btn btn--outline btn--sm" id="btn-sair" hidden>
-        <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sair
+        <i class="fas fa-right-from-bracket" aria-hidden="true"></i> <span class="rotulo-btn">Sair</span>
       </button>
       <button type="button" class="btn btn--gold btn--sm" data-nav="login" id="btn-entrar-nav">
-        <i class="fas fa-user" aria-hidden="true"></i> Entrar
+        <i class="fas fa-user" aria-hidden="true"></i> <span class="rotulo-btn">Entrar</span>
       </button>
       <button type="button" class="hamburguer" id="btn-hamburguer" aria-expanded="false" aria-controls="nav-principal" aria-label="Abrir menu de navegação">
         <span></span><span></span><span></span>
@@ -681,6 +684,13 @@
      acessibilidade: alto contraste, texto grande, reduzir movimento,
      modo daltônico e otimização para leitor de tela. As preferências
      são salvas no localStorage. -->
+<!-- Botão de TEMA (escuro / claro). Fica acima do botão de acessibilidade.
+     O modo escuro usa a identidade atual (preto + dourado); o modo claro usa
+     branco como cor principal e o azul como secundária. -->
+<button type="button" id="btn-tema" class="fab-tema" aria-pressed="false" aria-label="Alternar para o modo claro" title="Alternar tema (escuro/claro)">
+  <i class="fas fa-moon" id="icone-tema" aria-hidden="true"></i>
+</button>
+
 <button type="button" id="btn-acessibilidade" class="fab-acessibilidade" aria-expanded="false" aria-controls="painel-acessibilidade" aria-label="Abrir opções de acessibilidade">
   <i class="fas fa-universal-access" aria-hidden="true"></i>
 </button>
