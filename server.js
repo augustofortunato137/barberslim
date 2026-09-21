@@ -42,8 +42,14 @@ const app = express();
 
 // Atrás de um proxy (Railway/Cloudflare) o Express precisa confiar no cabeçalho
 // X-Forwarded-For para ver o IP real do cliente — essencial para o rate limit.
-// 'true' confia em todos os hops, usando o primeiro XFF (IP real do cliente).
-app.set('trust proxy', true);
+//
+// CORREÇÃO (bug): antes era `true`, que confia em QUALQUER hop do XFF. Nesse
+// modo qualquer pessoa podia forjar o cabeçalho X-Forwarded-For e escapar do
+// rate limit por IP (o express-rate-limit alertava isso com
+// ERR_ERL_PERMISSIVE_TRUST_PROXY a cada requisição).
+// Usamos 1: confia apenas no primeiro proxy (o edge da Railway), que é
+// exatamente quem injeta o IP real do cliente. Seguro e continua correto.
+app.set('trust proxy', 1);
 
 // ---------------------------------------------------------------------
 // Middlewares de segurança
