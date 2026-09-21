@@ -1370,3 +1370,392 @@ html.a11y-reduzir-movimento .opcao-selecao:hover,
 html.a11y-reduzir-movimento .item-historico:hover,
 html.a11y-reduzir-movimento .depoimento:hover,
 html.a11y-reduzir-movimento .stat-card:hover{ transform:none !important; }
+
+/* ===========================================================
+   TEMA CLARO / ESCURO (botão flutuante) — ver theme-light
+   =========================================================== */
+
+/* ===========================================================
+   TEMA CLARO (botão de alternância) + BOTÃO FLUTUANTE DE TEMA
+   -----------------------------------------------------------
+   Paleta do modo claro, conforme pedido:
+     • PRINCIPAL .......... branco (fundos e superfícies)
+     • SECUNDÁRIA ......... azul (destaques, botões, links, ícones)
+     • TERCIÁRIA .......... azuis MAIS ESCUROS (textos, títulos,
+                            bordas fortes e ênfases secundárias)
+
+   O modo escuro continua exatamente com a identidade atual
+   (preto + dourado) — nada muda nele.
+   =========================================================== */
+
+/* ---------- Botão flutuante de tema ---------- */
+.fab-tema{
+  position: fixed; right:1.5rem; bottom:5.4rem; z-index:150;
+  width:56px; height:56px; border-radius:50%; border:none;
+  display:grid; place-items:center; cursor:pointer;
+  font-size:1.3rem;
+  background: linear-gradient(140deg, #2b2b33, #16161c);
+  color: var(--ouro);
+  border:1px solid var(--borda-forte);
+  box-shadow: var(--sombra-alta);
+  transition: transform var(--transicao), box-shadow var(--transicao),
+              background var(--transicao), color var(--transicao);
+}
+.fab-tema:hover{ transform: translateY(-3px) rotate(12deg); }
+.fab-tema:active{ transform: translateY(0) scale(.96); }
+/* No modo claro o botão fica azul e o ícone branco */
+html.tema-claro .fab-tema{
+  background: linear-gradient(140deg, #3f8ae0, #14539f);
+  color:#ffffff;
+  border-color: rgba(20,83,159,.5);
+}
+@media (max-width: 520px){
+  .fab-tema{ width:50px; height:50px; bottom:5rem; right:1.1rem; font-size:1.15rem; }
+}
+
+/* ===========================================================
+   SOBRESCRITA DE TOKENS — MODO CLARO
+   =========================================================== */
+html.tema-claro{
+  color-scheme: light;
+
+  /* Fundos: branco principal, com apoio em azuis muito claros */
+  --bg-0:#ffffff;
+  --bg-1:#ffffff;
+  --bg-2:#f3f7fc;
+  --bg-3:#e9f1fb;
+
+  /* Azul = cor SECUNDÁRIA (assume o papel do dourado no claro) */
+  --ouro:#1e6fd9;
+  --ouro-forte:#14539f;   /* azul mais escuro */
+  --ouro-claro:#6aa9ef;   /* azul claro */
+
+  /* Terciária: azul bem escuro, usado em textos e ênfases */
+  --terracota:#0b2e57;
+
+  --superficie:rgba(30,111,217,.05);
+  --superficie-2:rgba(30,111,217,.10);
+  --vidro:rgba(255,255,255,.86);
+
+  /* Texto em azul escuro (contraste alto sobre branco) */
+  --texto:#0b2e57;
+  --texto-fraco:rgba(11,46,87,.76);
+  --texto-mais-fraco:rgba(11,46,87,.56);
+
+  --borda:rgba(30,111,217,.20);
+  --borda-forte:rgba(30,111,217,.48);
+
+  /* Sombras frias, tingidas de azul */
+  --sombra:
+    0 1px 2px rgba(11,46,87,.06),
+    0 8px 24px rgba(11,46,87,.10);
+  --sombra-alta:
+    0 2px 6px rgba(11,46,87,.08),
+    0 18px 50px rgba(11,46,87,.16);
+  --brilho-ouro:0 10px 34px rgba(30,111,217,.22);
+}
+
+/* ---------- Fundo da página ---------- */
+html.tema-claro body{
+  background:
+    radial-gradient(58rem 32rem at 12% -8%, rgba(30,111,217,.10), transparent 62%),
+    radial-gradient(46rem 28rem at 104% 8%, rgba(11,46,87,.07), transparent 60%),
+    linear-gradient(180deg, #ffffff, #f5f9fd 60%, #eef4fb);
+  background-attachment: fixed;
+}
+html.tema-claro ::selection{ background: rgba(30,111,217,.22); color:#0b2e57; }
+
+/* ---------- Scrollbar ---------- */
+html.tema-claro *{ scrollbar-color: rgba(30,111,217,.45) transparent; }
+html.tema-claro ::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(30,111,217,.5), rgba(11,46,87,.42));
+  background-clip: content-box;
+}
+html.tema-claro ::-webkit-scrollbar-thumb:hover{
+  background: linear-gradient(180deg, rgba(30,111,217,.75), rgba(11,46,87,.6));
+  background-clip: content-box;
+}
+
+/* ---------- Cabeçalho ---------- */
+html.tema-claro .header{
+  background: var(--vidro);
+  border-bottom:1px solid rgba(11,46,87,.10);
+}
+html.tema-claro .header.is-rolado{
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 8px 30px rgba(11,46,87,.12);
+}
+html.tema-claro .nav__lista a{ color: rgba(11,46,87,.7); }
+html.tema-claro .nav__lista a:hover{ color:#0b2e57; }
+html.tema-claro .nav__lista a::after{
+  background: linear-gradient(90deg, var(--ouro-forte), var(--ouro));
+}
+html.tema-claro .logo__img{
+  background:#ffffff;
+  border-color: rgba(30,111,217,.28);
+  box-shadow: 0 4px 16px rgba(11,46,87,.12);
+}
+html.tema-claro .hamburguer{
+  border-color: var(--borda);
+  background: var(--superficie);
+}
+html.tema-claro .hamburguer span{ background: var(--ouro-forte); }
+
+/* ---------- Botões ---------- */
+html.tema-claro .btn--gold{
+  background: linear-gradient(135deg, #4a94e6 0%, var(--ouro) 48%, var(--ouro-forte) 100%);
+  color:#ffffff;
+  box-shadow: var(--brilho-ouro), inset 0 1px 0 rgba(255,255,255,.35);
+}
+html.tema-claro .btn--gold:hover{
+  box-shadow: 0 14px 40px rgba(30,111,217,.34), inset 0 1px 0 rgba(255,255,255,.4);
+}
+html.tema-claro .btn--outline{
+  border-color: rgba(30,111,217,.4);
+  color: var(--ouro-forte);
+  background: rgba(255,255,255,.7);
+}
+html.tema-claro .btn--outline:hover{
+  background: rgba(30,111,217,.10);
+  border-color: var(--ouro);
+}
+html.tema-claro .btn--ghost{ border-color: var(--ouro); color: var(--ouro-forte); }
+html.tema-claro .selo-status--confirmado{ color:#0f7a45; }
+html.tema-claro .btn-excluir{ border-color:#c0392b; color:#c0392b; }
+html.tema-claro .btn-excluir:hover{ background: rgba(192,57,43,.10); color:#a12b1e; }
+
+/* ---------- Hero: mantém impacto com gradiente AZUL ---------- */
+html.tema-claro .hero{ border-bottom:1px solid rgba(11,46,87,.10); }
+html.tema-claro .hero__fundo{
+  background:
+    radial-gradient(48rem 26rem at 22% 18%, rgba(255,255,255,.22), transparent 60%),
+    radial-gradient(40rem 24rem at 88% 78%, rgba(11,46,87,.35), transparent 62%),
+    linear-gradient(140deg, #1e6fd9 0%, #14539f 55%, #0b2e57 100%);
+}
+html.tema-claro .hero__fundo::after{
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+}
+html.tema-claro .hero h1{ color:#ffffff; text-shadow: 0 22px 60px rgba(11,46,87,.45); }
+html.tema-claro .hero__subtitulo{ color: rgba(255,255,255,.88); }
+html.tema-claro .hero .eyebrow{ color:#c9e0fb; }
+html.tema-claro .hero__link-secundario{ color: rgba(255,255,255,.82); }
+html.tema-claro .hero__link-secundario:hover{ color:#ffffff; border-color: rgba(255,255,255,.6); }
+html.tema-claro .hero__ponto{ background: rgba(255,255,255,.35); }
+html.tema-claro .hero__ponto.is-ativo{
+  background: linear-gradient(90deg, #ffffff, #c9e0fb);
+}
+html.tema-claro .hero .btn--outline{
+  border-color: rgba(255,255,255,.55); color:#ffffff; background: rgba(255,255,255,.10);
+}
+html.tema-claro .hero .btn--outline:hover{ background: rgba(255,255,255,.2); }
+
+/* ---------- Superfícies (cartões, forms, listas) ---------- */
+html.tema-claro .card,
+html.tema-claro .depoimento,
+html.tema-claro .cartao-citacao,
+html.tema-claro .stat-card,
+html.tema-claro .opcao-selecao,
+html.tema-claro .item-historico,
+html.tema-claro .opcao-pagamento,
+html.tema-claro .cartao-auth{
+  background: linear-gradient(160deg, #ffffff, #f7fafd);
+  border:1px solid rgba(11,46,87,.10);
+  box-shadow: var(--sombra);
+}
+html.tema-claro .card:hover,
+html.tema-claro .depoimento:hover,
+html.tema-claro .item-historico:hover{
+  border-color: rgba(30,111,217,.35);
+  box-shadow: var(--sombra-alta);
+}
+html.tema-claro .card__icone{
+  background: linear-gradient(150deg, rgba(30,111,217,.16), rgba(11,46,87,.08));
+  border:1px solid rgba(30,111,217,.28);
+  color: var(--ouro);
+}
+html.tema-claro .depoimento__avatar{
+  background: linear-gradient(150deg, rgba(30,111,217,.18), rgba(11,46,87,.08));
+  border:1px solid rgba(30,111,217,.3);
+  color: var(--ouro-forte);
+}
+html.tema-claro .depoimento__estrelas{ color:#e0a800; }
+html.tema-claro .card.highlight,
+html.tema-claro .depoimento,
+html.tema-claro .cartao-citacao{ color: var(--texto); }
+
+/* Números em destaque: gradiente azul */
+html.tema-claro .social-proof__numero,
+html.tema-claro .stat-card__numero{
+  background: linear-gradient(135deg, #4a94e6, var(--ouro-forte));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--ouro-forte);
+}
+
+/* Divisor */
+html.tema-claro .divisor{ color: var(--ouro); }
+html.tema-claro .divisor span{
+  background: linear-gradient(90deg, transparent, rgba(30,111,217,.35), transparent);
+}
+
+/* ---------- Formulários ---------- */
+html.tema-claro .campo input[type="text"], html.tema-claro .campo input[type="email"],
+html.tema-claro .campo input[type="password"], html.tema-claro .campo input[type="tel"],
+html.tema-claro .campo input[type="date"], html.tema-claro .campo textarea,
+html.tema-claro .campo select{
+  background:#ffffff;
+  border:1px solid rgba(11,46,87,.18);
+  color: var(--texto);
+}
+html.tema-claro .campo input:hover, html.tema-claro .campo textarea:hover{
+  border-color: rgba(30,111,217,.4);
+}
+html.tema-claro .campo input:focus, html.tema-claro .campo textarea:focus,
+html.tema-claro .campo select:focus{
+  background:#ffffff;
+  border-color: var(--ouro);
+  box-shadow: 0 0 0 4px rgba(30,111,217,.16);
+}
+html.tema-claro .campo input::placeholder{ color: rgba(11,46,87,.38); }
+html.tema-claro .campo input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: none; opacity:.7;
+}
+html.tema-claro .abas-auth{ background: rgba(11,46,87,.05); border-color: rgba(11,46,87,.10); }
+html.tema-claro .aba-auth{ color: rgba(11,46,87,.65); }
+html.tema-claro .aba-auth.is-ativa{
+  background: linear-gradient(135deg, #4a94e6, var(--ouro-forte));
+  color:#ffffff;
+}
+html.tema-claro .medidor-forca{ background: rgba(11,46,87,.12); }
+html.tema-claro .texto-confianca{ color: var(--ouro-forte); }
+html.tema-claro .erro{ color:#c0392b; }
+
+/* Mensagens de status */
+html.tema-claro .mensagem-status:not(:empty){ background: rgba(11,46,87,.04); }
+html.tema-claro .mensagem-status.erro{ color:#b3261e; background: rgba(192,57,43,.10); }
+html.tema-claro .mensagem-status.sucesso{ color:#0f7a45; background: rgba(15,122,69,.10); }
+
+/* ---------- Agendamento ---------- */
+html.tema-claro .passo{
+  border-color: rgba(11,46,87,.12);
+  background:#ffffff;
+  color: var(--texto-fraco);
+}
+html.tema-claro .passo.is-ativo{
+  color: var(--ouro-forte);
+  border-color: rgba(30,111,217,.45);
+  background: rgba(30,111,217,.10);
+}
+html.tema-claro .horario-btn{
+  background:#ffffff;
+  border-color: rgba(11,46,87,.16);
+  color: var(--texto);
+}
+html.tema-claro .horario-btn:not(:disabled):hover{
+  border-color: var(--ouro);
+  background: rgba(30,111,217,.08);
+}
+html.tema-claro .horario-btn.is-selecionado{
+  background: linear-gradient(135deg, #4a94e6, var(--ouro-forte));
+  color:#ffffff;
+}
+html.tema-claro .opcao-selecao.is-selecionada{
+  border-color: var(--ouro);
+  background: linear-gradient(160deg, rgba(30,111,217,.12), rgba(30,111,217,.04));
+  box-shadow: 0 0 0 1px rgba(30,111,217,.35), var(--brilho-ouro);
+}
+html.tema-claro .opcao-pagamento__icone{
+  background: rgba(30,111,217,.12);
+  color: var(--ouro);
+}
+html.tema-claro .opcao-pagamento:has(input:checked){
+  border-color: var(--ouro);
+  background: rgba(30,111,217,.08);
+}
+
+/* ---------- PIX ---------- */
+html.tema-claro .cartao-pagamento{ background: linear-gradient(170deg,#ffffff,#f4f8fd); }
+html.tema-claro .pix-copia textarea{
+  background:#f7fafd;
+  border:1px dashed rgba(30,111,217,.4);
+  color: var(--texto);
+}
+html.tema-claro .pix-qr{ background:#ffffff; box-shadow: var(--sombra-alta); }
+html.tema-claro .icone-pix{ background: rgba(30,111,217,.12); color: var(--ouro); }
+html.tema-claro .lista-resumo div{ border-bottom:1px dashed rgba(11,46,87,.14); }
+
+/* ---------- Histórico / Admin / Tabela ---------- */
+html.tema-claro .selo-status--confirmado{
+  background: rgba(15,122,69,.12); color:#0f7a45; border-color: rgba(15,122,69,.35);
+}
+html.tema-claro .selo-status--pendente{
+  background: rgba(224,168,0,.14); color:#8a6300; border-color: rgba(224,168,0,.4);
+}
+html.tema-claro .selo-status--cancelado{
+  background: rgba(192,57,43,.10); color:#b3261e; border-color: rgba(192,57,43,.35);
+}
+html.tema-claro .stat-card--acao{ border-color: rgba(30,111,217,.35); color: var(--ouro-forte); }
+html.tema-claro .tabela-wrapper{ border-color: rgba(11,46,87,.12); }
+html.tema-claro .tabela-admin th{
+  background: rgba(30,111,217,.06);
+  color: var(--ouro-forte);
+}
+html.tema-claro .tabela-admin th,
+html.tema-claro .tabela-admin td{ border-bottom:1px solid rgba(11,46,87,.10); }
+html.tema-claro .tabela-admin tbody tr:hover{ background: rgba(30,111,217,.04); }
+
+/* ---------- Modal / Painel de acessibilidade ---------- */
+html.tema-claro .modal{ background: rgba(11,46,87,.35); }
+html.tema-claro .modal__caixa{
+  background: linear-gradient(170deg,#ffffff,#f4f8fd);
+  border-color: rgba(30,111,217,.3);
+  color: var(--texto);
+}
+html.tema-claro .modal__fechar{ background: rgba(11,46,87,.06); color: var(--texto); }
+html.tema-claro .modal__fechar:hover{ background: rgba(11,46,87,.12); }
+html.tema-claro .grafico-barras__trilha{ background: rgba(11,46,87,.10); }
+html.tema-claro .grafico-barras__preenchimento{
+  background: linear-gradient(90deg, var(--ouro-forte), #6aa9ef);
+}
+html.tema-claro .painel-acessibilidade{
+  background: linear-gradient(180deg,#ffffff,#f2f7fc);
+  border-left:1px solid rgba(30,111,217,.28);
+  color: var(--texto);
+  box-shadow: -24px 0 60px rgba(11,46,87,.18);
+}
+html.tema-claro .painel-acessibilidade__cabecalho{ border-bottom-color: rgba(11,46,87,.10); }
+html.tema-claro .fab-acessibilidade{
+  background: linear-gradient(140deg, #4a94e6, var(--ouro-forte));
+  color:#ffffff;
+  box-shadow: var(--brilho-ouro), var(--sombra-alta);
+}
+html.tema-claro .overlay{ background: rgba(11,46,87,.35); }
+
+/* ---------- Rodapé ---------- */
+html.tema-claro .rodape{
+  border-top:1px solid rgba(11,46,87,.10);
+  background: #f5f9fd;
+}
+html.tema-claro .rodape__logo{ background:#ffffff; border-color: rgba(30,111,217,.25); }
+html.tema-claro .rodape__redes a{
+  border-color: rgba(30,111,217,.3);
+  background:#ffffff;
+  color: var(--ouro-forte);
+}
+html.tema-claro .rodape__redes a:hover{ background: rgba(30,111,217,.12); border-color: var(--ouro); }
+html.tema-claro .link-admin{ color: rgba(11,46,87,.5); }
+
+/* ---------- Menu mobile (só no breakpoint da gaveta) ---------- */
+@media (max-width: 760px){
+  html.tema-claro .nav{
+    background: linear-gradient(180deg, #ffffff, #f5f9fd);
+    border-bottom:1px solid rgba(30,111,217,.25);
+    box-shadow: 0 24px 50px rgba(11,46,87,.16);
+  }
+  html.tema-claro .nav__lista li{ border-bottom:1px solid rgba(11,46,87,.08); }
+  html.tema-claro .nav.aberto::before{ background: rgba(11,46,87,.28); }
+}
+
+/* ---------- Acessibilidade: alto contraste tem prioridade ---------- */
+html.a11y-contraste body{ background:#000 !important; }
