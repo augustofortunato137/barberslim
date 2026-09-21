@@ -44,6 +44,14 @@
 
   /* Largura máxima do conteúdo (alinhamento central) */
   --largura-max: 1180px;
+
+  /* Altura do cabeçalho — usada pelo menu mobile para não sobrepor a barra. */
+  --altura-header: 74px;
+
+  /* Cor dos controles nativos (calendário do input[type=date], checkboxes,
+     scrollbars). Sem isto o navegador desenha controles CLAROS sobre o tema
+     escuro, deixando o ícone do calendário quase invisível. */
+  color-scheme: dark;
 }
 
 /* ---------- RESET ---------- */
@@ -636,17 +644,21 @@ html.a11y-leitor-tela .card__icone{ display: none; }
 }
 @media (max-width: 760px){
   .nav{
-    position:fixed; top:64px; left:0; right:0; background: var(--bg-2);
+    position:fixed; top:var(--altura-header); left:0; right:0; background: var(--bg-2);
     border-bottom:1px solid var(--borda); transform: translateY(-130%); transition: transform var(--transicao);
     padding:1rem 1.5rem;
   }
   .nav.aberto{ transform: translateY(0); }
   .nav__lista{ flex-direction:column; gap:1rem; }
   .hamburguer{ display:flex; }
-  .header__acoes .btn span, #btn-historico-nav, #btn-sair{ }
+  /* No celular a barra de ações não cabe: esconde os rótulos de texto
+     (mantendo os ícones) para evitar estouro horizontal do cabeçalho. */
+  .header__acoes .btn{
+    padding:.5rem .7rem;
+  }
+  .header__acoes .btn .rotulo-btn{ display:none; }
   .grade-cards{ grid-template-columns: 1fr; }
   .grade-stats{ grid-template-columns: 1fr 1fr; }
-  .header__acoes .btn--sm{ padding:.5rem .7rem; }
 }
 @media (max-width: 480px){
   .grade-stats{ grid-template-columns: 1fr; }
@@ -708,4 +720,3 @@ html.a11y-contraste .opcao-pagamento{ background:#000; border-width:2px; }
 .btn--bloco{ width:100%; justify-content:center; }
 #div-gerar-pix{ margin-bottom:.6rem; }
 #div-pix-pronto{ animation: aparecer .35s ease; }
-@keyframes aparecer{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
