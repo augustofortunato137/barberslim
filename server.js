@@ -17,6 +17,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
@@ -91,6 +92,36 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json({ limit: '30kb' }));   // corpo JSON limitado (evita payloads gigantes/DoS)
+
+// ---------------------------------------------------------------------
+// LOGO — servida a partir de base64 (contorna o envio só-texto do Git)
+// ---------------------------------------------------------------------
+// POR QUE ISSO EXISTE: o arquivo public/logo.png do repositório acabou sendo
+// gravado como TEXTO base64 (o conector do GitHub aceita apenas texto), então
+// o navegador recebia caracteres em vez de bytes de imagem e mostrava o ícone
+// de "imagem quebrada" (o servidor ainda anunciava image/png com nosniff).
+//
+// SOLUÇÃO: o PNG verdadeiro fica em public/logo.b64 (texto puro, que sobe sem
+// corromper). Esta rota decodifica e entrega os BYTES corretos de imagem, com
+// o content-type certo. Vem ANTES do express.static para ter prioridade sobre
+// o arquivo estático quebrado.
+//
+// Sempre que a logo mudar: gere o novo PNG e substitua public/logo.b64.
+app.get('/logo.png', (req, res) => {
+  try {
+    const b64 = fs
+      .readFileSync(path.join(__dirname, 'public', 'logo.b64'), 'utf8')
+      .replace(/\s+/g, '');
+    const bytes = Buffer.from(b64, 'base64');
+    if (!bytes.length) throw new Error('base64 vazio');
+    res.set('Content-Type', 'image/png');
+    res.set('Cache-Control', 'public, max-age=604800');
+    res.send(bytes);
+  } catch (e) {
+    console.error('[server] Falha ao servir a logo:', e.message);
+    res.status(404).end();
+  }
+});
 
 // Serve o frontend (pasta public/) no mesmo domínio da API -> um link só.
 app.use(express.static(path.join(__dirname, 'public')));
