@@ -265,6 +265,15 @@
     btnHamburguer.setAttribute('aria-expanded', String(aberto));
   });
 
+  // Cabeçalho "glass": ganha fundo mais sólido e sombra depois que a página
+  // rola, dando profundidade e separando o header do conteúdo.
+  const cabecalho = document.querySelector('.header');
+  if (cabecalho) {
+    const atualizarHeaderRolagem = () => cabecalho.classList.toggle('is-rolado', window.scrollY > 8);
+    atualizarHeaderRolagem();
+    window.addEventListener('scroll', atualizarHeaderRolagem, { passive: true });
+  }
+
   document.getElementById('ano-atual').textContent = new Date().getFullYear();
 
   /* ---------------------------------------------------------
@@ -655,7 +664,9 @@
       btnEntrar.hidden = true;
       btnSair.hidden = false;
       btnHistorico.hidden = sessao.tipo === 'admin';
-      btnSair.innerHTML = `<i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sair (${esc(sessao.nome.split(' ')[0])})`;
+      // Sessões antigas podem não ter 'nome' guardado -> evita erro no split().
+      const primeiroNome = String(sessao.nome || 'conta').trim().split(/\s+/)[0] || 'conta';
+      btnSair.innerHTML = `<i class="fas fa-right-from-bracket" aria-hidden="true"></i> <span class="rotulo-btn">Sair (${esc(primeiroNome)})</span>`;
     } else {
       btnEntrar.hidden = false;
       btnSair.hidden = true;
@@ -674,7 +685,7 @@
     selecaoAgendamento.data = null;
     selecaoAgendamento.horario = null;
     selecaoAgendamento.pagamento = null;
-    mostrarErro('msg-agendamento', '');
+    definirStatus('msg-agendamento', '', '');
 
     // Reseta a seleção de pagamento (rádios)
     const radiosPagamento = document.querySelectorAll('#lista-pagamento input[name="pagamento"]');
@@ -851,18 +862,20 @@
     const sessao = getSessao();
     // Admin não agenda; e sem sessão manda para o login
     if (!sessao || sessao.tipo === 'admin') {
-      mostrarErro('msg-agendamento', 'Faça login ou entre como visitante para agendar.');
+      definirStatus('msg-agendamento', 'Faça login ou entre como visitante para agendar.', 'erro');
       irPara('login');
       return;
     }
-    // Validações em cascata (mostra a primeira que falhar)
-    if (!selecaoAgendamento.barbeiroId) { mostrarErro('msg-agendamento', 'Selecione um barbeiro.'); return; }
-    if (selecaoAgendamento.servicos.length === 0) { mostrarErro('msg-agendamento', 'Selecione ao menos um serviço.'); return; }
-    if (!selecaoAgendamento.data) { mostrarErro('msg-agendamento', 'Selecione uma data.'); return; }
-    if (!selecaoAgendamento.horario) { mostrarErro('msg-agendamento', 'Selecione um horário.'); return; }
-    if (!selecaoAgendamento.pagamento) { mostrarErro('msg-agendamento', 'Escolha a forma de pagamento (PIX ou dinheiro).'); return; }
+    // Validações em cascata (mostra a primeira que falhar).
+    // Usamos definirStatus (e não mostrarErro) para que a mensagem receba
+    // a classe de erro e fique visível em vermelho para o usuário.
+    if (!selecaoAgendamento.barbeiroId) { definirStatus('msg-agendamento', 'Selecione um barbeiro.', 'erro'); return; }
+    if (selecaoAgendamento.servicos.length === 0) { definirStatus('msg-agendamento', 'Selecione ao menos um serviço.', 'erro'); return; }
+    if (!selecaoAgendamento.data) { definirStatus('msg-agendamento', 'Selecione uma data.', 'erro'); return; }
+    if (!selecaoAgendamento.horario) { definirStatus('msg-agendamento', 'Selecione um horário.', 'erro'); return; }
+    if (!selecaoAgendamento.pagamento) { definirStatus('msg-agendamento', 'Escolha a forma de pagamento (PIX ou dinheiro).', 'erro'); return; }
 
-    mostrarErro('msg-agendamento', '');
+    definirStatus('msg-agendamento', '', '');
 
     // Resolve os objetos escolhidos (barbeiro e serviços) pelos ids salvos
     const barbeiro = cacheBarbeiros.find(b => b.id === selecaoAgendamento.barbeiroId);
@@ -915,7 +928,7 @@
           irPara('confirmacao');
         }
       } catch (err) {
-        mostrarErro('msg-agendamento', (err && err.message) || 'Erro ao salvar o agendamento.');
+        definirStatus('msg-agendamento', (err && err.message) || 'Erro ao salvar o agendamento.', 'erro');
       } finally {
         this.disabled = false;
       }
@@ -968,7 +981,7 @@
   function montarPagamento(ag) {
     agendamentoPendente = ag;
     pararPolling();
-    mostrarErro('msg-pagamento', '');
+    definirStatus('msg-pagamento', '', '');
     const sessao = getSessao();
     const emailPrefill = (sessao && sessao.email) || '';
     document.getElementById('resumo-pagamento').innerHTML = `
@@ -990,12 +1003,12 @@
     const ag = agendamentoPendente;
     if (!ag) return;
     const email = document.getElementById('pix-email').value.trim().toLowerCase();
-    if (!emailValido(email)) { mostrarErro('msg-pagamento', 'Informe um e-mail válido para gerar o PIX.'); return; }
+    if (!emailValido(email)) { definirStatus('msg-pagamento', 'Informe um e-mail válido para gerar o PIX.', 'erro'); return; }
 
     const btn = document.getElementById('btn-gerar-pix');
     btn.disabled = true;
     btn.textContent = 'Gerando...';
-    mostrarErro('msg-pagamento', '');
+    definirStatus('msg-pagamento', '', '');
     try {
       const r = await window.BarberSlimAPI.obterPixAsync(ag.id, email);
       document.getElementById('pix-qr').src = r.qrDataUrl || '';
@@ -1011,7 +1024,7 @@
       if (r.gateway === 'mercadopago') iniciarPolling(ag);
     } catch (e) {
       const precisaEmail = !!(e && e.precisaEmail) || /e-mail/i.test((e && e.message) || '');
-      mostrarErro('msg-pagamento', (e && e.message) || 'Não foi possível gerar o PIX. Tente novamente.');
+      definirStatus('msg-pagamento', (e && e.message) || 'Não foi possível gerar o PIX. Tente novamente.', 'erro');
       if (precisaEmail) document.getElementById('div-gerar-pix').hidden = false;
     } finally {
       btn.disabled = false;
@@ -1021,10 +1034,22 @@
 
   let timerPolling = null;
   function pararPolling() { if (timerPolling) { clearInterval(timerPolling); timerPolling = null; } }
-  /** Consulta o status a cada 2s; quando confirmado, fecha a tela de pagamento. */
+  /** Consulta o status a cada 2s; quando confirmado, fecha a tela de pagamento.
+   *  Tem limite de tentativas para NÃO ficar consultando a API para sempre
+   *  (antes, se o pagamento nunca fosse confirmado, o polling rodava sem fim). */
   function iniciarPolling(ag) {
     pararPolling();
+    const MAX_TENTATIVAS = 150; // ~5 minutos (150 tentativas x 2s)
+    let tentativas = 0;
     timerPolling = setInterval(async () => {
+      tentativas++;
+      if (tentativas > MAX_TENTATIVAS) {
+        pararPolling();
+        definirStatus('msg-pagamento', 'Ainda não identificamos o pagamento. Se já pagou, clique em "Já paguei".', 'erro');
+        const b = document.getElementById('btn-confirmar-pagamento');
+        if (b) b.hidden = false;
+        return;
+      }
       try {
         const s = await window.BarberSlimAPI.obterStatusAsync(ag.id);
         if (s && s.status === 'confirmado') {
@@ -1043,7 +1068,7 @@
   function montarPagamentoDemo(ag) {
     agendamentoPendente = ag;
     pararPolling();
-    mostrarErro('msg-pagamento', '');
+    definirStatus('msg-pagamento', '', '');
     document.getElementById('resumo-pagamento').innerHTML = `
       <div><dt>Barbeiro</dt><dd>${esc(ag.barbeiroNome)}</dd></div>
       <div><dt>Serviços</dt><dd>${esc(ag.servicos.join(', '))}</dd></div>
@@ -1080,7 +1105,7 @@
       montarConfirmacao(ag);
       irPara('confirmacao');
     } catch (err) {
-      mostrarErro('msg-pagamento', (err && err.message) || 'Erro ao confirmar o pagamento.');
+      definirStatus('msg-pagamento', (err && err.message) || 'Erro ao confirmar o pagamento.', 'erro');
     } finally {
       btn.disabled = false;
     }
@@ -1093,18 +1118,18 @@
     if (!ta.value) return;
     const ok = navigator.clipboard ? navigator.clipboard.writeText(ta.value) : null;
     if (ok && ok.then) {
-      ok.then(() => mostrarErro('msg-pagamento', 'Código copiado! Copie e pague no seu banco.'))
+      ok.then(() => definirStatus('msg-pagamento', 'Código copiado! Cole e pague no seu banco.', 'sucesso'))
         .catch(() => {});
     } else {
       ta.select();
       document.execCommand('copy');
-      mostrarErro('msg-pagamento', 'Código copiado! Copie e pague no seu banco.');
+      definirStatus('msg-pagamento', 'Código copiado! Cole e pague no seu banco.', 'sucesso');
     }
   });
   document.getElementById('btn-cancelar-pagamento').addEventListener('click', function () {
     pararPolling();
     agendamentoPendente = null;
-    mostrarErro('msg-pagamento', '');
+    definirStatus('msg-pagamento', '', '');
     irPara('home');
   });
 
