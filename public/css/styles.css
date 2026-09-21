@@ -651,12 +651,11 @@ html.a11y-leitor-tela .card__icone{ display: none; }
   .nav.aberto{ transform: translateY(0); }
   .nav__lista{ flex-direction:column; gap:1rem; }
   .hamburguer{ display:flex; }
-  /* No celular a barra de ações não cabe: esconde os rótulos de texto
-     (mantendo os ícones) para evitar estouro horizontal do cabeçalho. */
-  .header__acoes .btn{
-    padding:.5rem .7rem;
-  }
-  .header__acoes .btn .rotulo-btn{ display:none; }
+  /* No celular a barra de ações não cabe: oculta o TEXTO dos botões e mantém
+     só os ícones, sem precisar alterar o HTML. font-size:0 colapsa o nó de
+     texto; devolvemos o tamanho apenas no <i> do ícone. */
+  .header__acoes .btn{ padding:.5rem .75rem; font-size:0; gap:0; }
+  .header__acoes .btn i{ font-size:.82rem; }
   .grade-cards{ grid-template-columns: 1fr; }
   .grade-stats{ grid-template-columns: 1fr 1fr; }
 }
@@ -720,3 +719,654 @@ html.a11y-contraste .opcao-pagamento{ background:#000; border-width:2px; }
 .btn--bloco{ width:100%; justify-content:center; }
 #div-gerar-pix{ margin-bottom:.6rem; }
 #div-pix-pronto{ animation: aparecer .35s ease; }
+
+/* ===========================================================
+   FIM DO ARQUIVO BASE — INÍCIO DA CAMADA MODERNA (v2)
+   (incorporada aqui para manter o deploy num único CSS)
+   =========================================================== */
+
+/* =========================================================
+   BARBERSLIM — CAMADA MODERNA (v2)
+   =========================================================
+   Este arquivo NÃO reescreve o site: ele é uma camada de
+   refinamento carregada DEPOIS de styles.css. Aqui vivem:
+
+     1. Tokens de design atualizados (cor, profundidade, raio, sombra)
+     2. Tipografia com escala fluida e hierarquia mais clara
+     3. Cabeçalho "glass" com estado de rolagem
+     4. Botões com gradiente, brilho interno e estados de clique
+     5. Hero com malha de gradiente e slides empilhados (sem corte)
+     6. Cartões/Depoimentos/Serviços com borda em gradiente
+     7. Formulários e controles nativos coerentes com o tema escuro
+     8. Menu mobile em gaveta com backdrop
+     9. Detalhes: scrollbar, seleção, foco, badges, tabelas
+
+   A identidade "barbearia premium" (preto + dourado) é mantida.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1) TOKENS ATUALIZADOS
+   --------------------------------------------------------- */
+:root{
+  /* Pretos com leve subtom quente — mais ricos que preto puro */
+  --bg-0:#08070a;
+  --bg-1:#0d0c11;
+  --bg-2:#131218;
+  --bg-3:#17161d;
+
+  /* Dourado com escala mais ampla (mantém a marca) */
+  --ouro:#f5c518;
+  --ouro-forte:#e8a800;
+  --ouro-claro:#ffe9a3;
+  --terracota:#c2603f;
+
+  /* Superfícies translúcidas reutilizáveis */
+  --superficie:rgba(255,255,255,.035);
+  --superficie-2:rgba(255,255,255,.06);
+  --vidro:rgba(13,12,17,.72);
+
+  --texto:#f7f6f3;
+  --texto-fraco:rgba(247,246,243,.72);
+  --texto-mais-fraco:rgba(247,246,243,.5);
+
+  --borda:rgba(245,197,24,.16);
+  --borda-forte:rgba(245,197,24,.42);
+
+  /* Raios mais generosos = aparência contemporânea */
+  --raio:12px;
+  --raio-grande:20px;
+  --raio-pill:999px;
+
+  /* Sombras em camadas (profundidade realista) */
+  --sombra:
+    0 1px 2px rgba(0,0,0,.5),
+    0 8px 24px rgba(0,0,0,.45);
+  --sombra-alta:
+    0 2px 6px rgba(0,0,0,.5),
+    0 18px 50px rgba(0,0,0,.6);
+  --brilho-ouro:0 10px 34px rgba(245,197,24,.22);
+
+  --transicao:.22s cubic-bezier(.4,0,.2,1);
+  --largura-max:1200px;
+  --altura-header:74px;
+
+  /* Tipografia fluida */
+  --fonte-titulo:'Fraunces', Georgia, serif;
+  --fonte-corpo:'Public Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* ---------------------------------------------------------
+   2) BASE E DETALHES FINOS
+   --------------------------------------------------------- */
+body{
+  background:
+    radial-gradient(58rem 32rem at 12% -8%, rgba(245,197,24,.075), transparent 62%),
+    radial-gradient(46rem 28rem at 104% 8%, rgba(194,96,63,.085), transparent 60%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2) 58%, var(--bg-0));
+  background-attachment: fixed;
+}
+
+/* Seleção de texto na cor da marca */
+::selection{ background: rgba(245,197,24,.28); color:#fff; }
+
+/* Scrollbar coerente com o tema */
+*{ scrollbar-color: rgba(245,197,24,.35) transparent; scrollbar-width: thin; }
+::-webkit-scrollbar{ width:11px; height:11px; }
+::-webkit-scrollbar-track{ background: transparent; }
+::-webkit-scrollbar-thumb{
+  background: linear-gradient(180deg, rgba(245,197,24,.4), rgba(194,96,63,.35));
+  border-radius:999px; border:3px solid transparent; background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover{ background: linear-gradient(180deg, rgba(245,197,24,.65), rgba(194,96,63,.5)); background-clip: content-box; }
+
+/* Foco consistente e visível (acessibilidade preservada) */
+:focus-visible{
+  outline:2px solid var(--ouro);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+/* ---------------------------------------------------------
+   3) TIPOGRAFIA
+   --------------------------------------------------------- */
+h1,h2,h3,h4{ letter-spacing:-.012em; }
+
+.titulo-secao{
+  font-size: clamp(1.7rem, 3.1vw, 2.5rem);
+  line-height:1.14;
+  letter-spacing:-.02em;
+  text-transform:none;                 /* caixa alta pesada envelhecia o layout */
+  color: var(--texto);
+  text-wrap: balance;                  /* evita títulos órfãos */
+}
+.rotulo,
+.eyebrow{
+  color: var(--ouro);
+  letter-spacing:.22em;
+  font-size:.72rem;
+  font-weight:800;
+}
+p{ line-height:1.68; }
+
+/* ---------------------------------------------------------
+   4) CABEÇALHO (glass + estado de rolagem)
+   --------------------------------------------------------- */
+.header{
+  background: var(--vidro);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  transition: box-shadow var(--transicao), background var(--transicao);
+}
+.header.is-rolado{
+  background: rgba(10,9,13,.9);
+  box-shadow: 0 8px 30px rgba(0,0,0,.5);
+}
+.header__inner{ height: var(--altura-header); padding:0 1.5rem; }
+
+/* Logo em "chip" mais discreto */
+.logo__img{
+  height:42px; background:#faf7ef;
+  border:1px solid rgba(245,197,24,.35);
+  border-radius:12px; padding:4px 11px;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+.logo:hover .logo__img{ transform: translateY(-1px); box-shadow:0 8px 22px rgba(0,0,0,.5); }
+
+/* Links do menu com "underline" animado */
+.nav__lista a{
+  position:relative; padding:.35rem 0;
+  font-size:.76rem; letter-spacing:.1em;
+  color: var(--texto-fraco);
+}
+.nav__lista a::after{
+  content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background: linear-gradient(90deg, var(--ouro-forte), var(--ouro-claro));
+  border-radius:2px; transform: scaleX(0); transform-origin:left;
+  transition: transform var(--transicao);
+}
+.nav__lista a:hover{ color: var(--texto); }
+.nav__lista a:hover::after{ transform: scaleX(1); }
+
+/* Hambúrguer moderno (vira um "X" quando aberto) */
+.hamburguer{ width:42px; height:42px; border-radius:12px; justify-content:center; align-items:center;
+  border:1px solid var(--borda); background: var(--superficie); transition: background var(--transicao); }
+.hamburguer:hover{ background: var(--superficie-2); }
+.hamburguer span{ transition: transform var(--transicao), opacity var(--transicao); }
+.hamburguer[aria-expanded="true"] span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
+.hamburguer[aria-expanded="true"] span:nth-child(2){ opacity:0; }
+.hamburguer[aria-expanded="true"] span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+
+/* ---------------------------------------------------------
+   5) BOTÕES
+   --------------------------------------------------------- */
+.btn{
+  border-radius: var(--raio-pill);
+  letter-spacing:.05em;
+  font-weight:800;
+  transition: transform var(--transicao), box-shadow var(--transicao),
+              background var(--transicao), border-color var(--transicao), color var(--transicao);
+}
+.btn:active{ transform: translateY(0) scale(.985); }
+
+.btn--gold{
+  background: linear-gradient(135deg, #ffd75e 0%, var(--ouro) 45%, var(--ouro-forte) 100%);
+  color:#241a00;
+  box-shadow: var(--brilho-ouro), inset 0 1px 0 rgba(255,255,255,.55);
+}
+.btn--gold:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(245,197,24,.34), inset 0 1px 0 rgba(255,255,255,.6);
+}
+.btn--outline{
+  border-color: rgba(245,197,24,.35);
+  color: var(--ouro);
+  background: var(--superficie);
+  backdrop-filter: blur(6px);
+}
+.btn--outline:hover{
+  background: rgba(245,197,24,.1);
+  border-color: var(--borda-forte);
+  transform: translateY(-2px);
+}
+.btn--ghost{ border-radius: var(--raio-pill); }
+
+/* ---------------------------------------------------------
+   6) HERO — malha de gradiente + slides EMPILHADOS
+   --------------------------------------------------------- */
+.hero{
+  min-height: min(88vh, 780px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.hero__fundo{
+  background:
+    radial-gradient(48rem 26rem at 22% 18%, rgba(245,197,24,.14), transparent 60%),
+    radial-gradient(40rem 24rem at 88% 78%, rgba(194,96,63,.16), transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%),
+    var(--bg-0);
+}
+/* Malha fina de linhas — textura sutil de estúdio */
+.hero__fundo::after{
+  content:""; position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(70% 60% at 50% 40%, #000 30%, transparent 100%);
+  pointer-events:none;
+}
+/* CORREÇÃO DE BUG: os slides eram position:absolute com min-height fixo,
+   o que CORTava títulos longos no celular. Com grid-stack, a altura do
+   slider passa a ser a do slide mais alto e nada é cortado. */
+.hero__slider{
+  display:grid;
+  min-height:0;
+}
+.hero__slide{
+  grid-area: 1 / 1;
+  position:static;
+  inset:auto;
+  opacity:0;
+  transform: translateY(14px);
+  transition: opacity .6s ease, transform .6s ease;
+  pointer-events:none;
+}
+.hero__slide.is-ativo{
+  opacity:1; transform:none; pointer-events:auto;
+}
+.hero h1{
+  font-size: clamp(2.05rem, 5.1vw, 3.9rem);
+  line-height:1.06;
+  letter-spacing:-.03em;
+  text-transform:none;
+  text-wrap: balance;
+  text-shadow: 0 22px 60px rgba(0,0,0,.55);
+  margin-bottom:.35em;
+}
+.hero__subtitulo{
+  font-style:normal;
+  font-size: clamp(.98rem, 1.6vw, 1.12rem);
+  color: var(--texto-fraco);
+  max-width: 46rem;
+  margin-inline:auto;
+}
+.hero__pontos{ gap:.5rem; }
+.hero__ponto{
+  width:26px; height:5px; border-radius:999px;
+  border:none; background: rgba(255,255,255,.18);
+  transition: background var(--transicao), width var(--transicao);
+}
+.hero__ponto.is-ativo{
+  background: linear-gradient(90deg, var(--ouro-forte), var(--ouro-claro));
+  width:40px;
+}
+
+/* ---------------------------------------------------------
+   7) DIVISOR
+   --------------------------------------------------------- */
+.divisor{ max-width:360px; padding:2.2rem 1.5rem; }
+.divisor span{ background: linear-gradient(90deg, transparent, rgba(245,197,24,.32), transparent); }
+.divisor i{ opacity:.75; }
+
+/* ---------------------------------------------------------
+   8) SUPERFÍCIES: cartões, depoimentos, citações, opções
+   --------------------------------------------------------- */
+.card,
+.depoimento,
+.cartao-citacao,
+.cartao-auth,
+.stat-card,
+.opcao-selecao,
+.item-historico,
+.opcao-pagamento{
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.075);
+  border-radius: var(--raio-grande);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.card{
+  padding:2.1rem 1.9rem;
+  transition: transform var(--transicao), border-color var(--transicao), box-shadow var(--transicao);
+}
+.card:hover{
+  transform: translateY(-6px);
+  border-color: rgba(245,197,24,.35);
+  box-shadow: var(--sombra-alta), 0 0 0 1px rgba(245,197,24,.08);
+}
+.card__icone{
+  width:62px; height:62px;
+  background: linear-gradient(150deg, rgba(245,197,24,.2), rgba(194,96,63,.12));
+  border:1px solid rgba(245,197,24,.28);
+  color: var(--ouro);
+}
+.card h3{ text-transform:none; font-size:1.16rem; letter-spacing:-.01em; }
+
+.depoimento{
+  transition: transform var(--transicao), border-color var(--transicao), box-shadow var(--transicao);
+}
+.depoimento:hover{ transform: translateY(-5px); border-color: rgba(245,197,24,.3); box-shadow: var(--sombra-alta); }
+.depoimento__estrelas{ color: var(--ouro); letter-spacing:.18em; }
+.depoimento__avatar{
+  background: linear-gradient(150deg, rgba(245,197,24,.25), rgba(194,96,63,.15));
+  border:1px solid rgba(245,197,24,.3);
+  color: var(--ouro);
+}
+
+.cartao-citacao{ padding:2.3rem; }
+.cartao-citacao p{ font-size:1.32rem; line-height:1.42; }
+
+/* Prova social: números com gradiente */
+.social-proof__numero{
+  background: linear-gradient(135deg, #ffe9a3, var(--ouro) 55%, var(--ouro-forte));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--ouro);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------
+   9) AGENDAMENTO: barbeiros, serviços, horários, pagamento
+   --------------------------------------------------------- */
+.opcao-selecao{
+  padding:1.25rem;
+  transition: transform var(--transicao), border-color var(--transicao),
+              background var(--transicao), box-shadow var(--transicao);
+}
+.opcao-selecao:hover{
+  transform: translateY(-4px);
+  border-color: rgba(245,197,24,.35);
+  box-shadow: var(--sombra);
+}
+.opcao-selecao.is-selecionada{
+  border-color: var(--ouro);
+  background: linear-gradient(160deg, rgba(245,197,24,.14), rgba(245,197,24,.05));
+  box-shadow: 0 0 0 1px rgba(245,197,24,.35), var(--brilho-ouro);
+}
+.opcao-selecao strong{ letter-spacing:-.01em; }
+
+.horario-btn{
+  border-radius: var(--raio-pill);
+  border:1px solid rgba(255,255,255,.11);
+  background: var(--superficie);
+  padding:.62rem 1.05rem;
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--transicao), border-color var(--transicao),
+              background var(--transicao), color var(--transicao);
+}
+.horario-btn:not(:disabled):hover{
+  transform: translateY(-2px);
+  border-color: rgba(245,197,24,.45);
+  background: rgba(245,197,24,.08);
+}
+.horario-btn.is-selecionado{
+  background: linear-gradient(135deg, #ffd75e, var(--ouro-forte));
+  color:#241a00; border-color: transparent; font-weight:800;
+  box-shadow: var(--brilho-ouro);
+}
+.horario-btn:disabled{ opacity:.26; background:transparent; }
+
+/* Etapas do agendamento como "chips" */
+.passos{ gap:.6rem; }
+.passo{
+  padding:.45rem .9rem;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius: var(--raio-pill);
+  background: var(--superficie);
+  border-bottom:1px solid rgba(255,255,255,.09);
+  transition: all var(--transicao);
+}
+.passo.is-ativo{
+  color: var(--ouro);
+  border-color: rgba(245,197,24,.45);
+  background: rgba(245,197,24,.1);
+}
+
+/* ---------------------------------------------------------
+   10) FORMULÁRIOS E CONTROLES NATIVOS (tema escuro correto)
+   --------------------------------------------------------- */
+.campo > span{
+  font-size:.74rem; letter-spacing:.09em; font-weight:700;
+  color: var(--texto-fraco);
+}
+.campo input[type="text"], .campo input[type="email"], .campo input[type="password"],
+.campo input[type="tel"], .campo input[type="date"],
+.campo textarea, .campo select{
+  border-radius: var(--raio);
+  border:1px solid rgba(255,255,255,.1);
+  background: rgba(0,0,0,.42);
+  padding:.88rem 1rem;
+  transition: border-color var(--transicao), box-shadow var(--transicao), background var(--transicao);
+}
+.campo input:hover, .campo textarea:hover{ border-color: rgba(255,255,255,.18); }
+.campo input:focus, .campo textarea:focus, .campo select:focus{
+  outline:none;
+  border-color: var(--ouro);
+  background: rgba(0,0,0,.55);
+  box-shadow: 0 0 0 4px rgba(245,197,24,.14);
+}
+.campo input::placeholder{ color: rgba(247,246,243,.32); }
+
+/* CORREÇÃO DE BUG: o ícone nativo do calendário (input[type=date]) é desenhado
+   em cor escura pelo navegador e desaparecia no fundo escuro. Invertemos o
+   filtro para ele ficar visível/claro. */
+.campo input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: invert(1) brightness(1.6);
+  opacity:.75; cursor:pointer;
+}
+.campo input[type="date"]::-webkit-calendar-picker-indicator:hover{ opacity:1; }
+
+/* Checkbox com cor da marca */
+.campo--checkbox input[type="checkbox"],
+.opcao-acessibilidade input[type="checkbox"],
+.opcao-pagamento input[type="radio"]{
+  accent-color: var(--ouro);
+}
+
+.cartao-auth{
+  background: linear-gradient(170deg, rgba(23,22,29,.92), rgba(13,12,17,.92));
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow: var(--sombra-alta);
+  border-radius: 22px;
+  padding:1.4rem 2.3rem 2.3rem;
+}
+.abas-auth{
+  background: rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.07);
+}
+.aba-auth{ border-radius: var(--raio-pill); transition: all var(--transicao); }
+.aba-auth.is-ativa{
+  background: linear-gradient(135deg, #ffd75e, var(--ouro-forte));
+  color:#241a00;
+}
+.medidor-forca{ height:7px; border-radius:999px; background: rgba(255,255,255,.09); }
+.medidor-forca span{ border-radius:999px; }
+
+/* Exibe as mensagens de status com destaque (erro agora fica vermelho) */
+.mensagem-status{
+  padding:.55rem .9rem; border-radius: var(--raio);
+  transition: background var(--transicao);
+}
+.mensagem-status:not(:empty){ background: rgba(255,255,255,.04); }
+.mensagem-status.erro{ color:#ff8a97; background: rgba(220,53,69,.1); }
+.mensagem-status.sucesso{ color:#6ee7a0; background: rgba(40,199,111,.1); }
+
+/* ---------------------------------------------------------
+   11) PIX / CONFIRMAÇÃO
+   --------------------------------------------------------- */
+.cartao-pagamento{ max-width:500px; }
+.pix-qr{ border-radius:18px; box-shadow: var(--sombra-alta); }
+.pix-copia textarea{
+  background: rgba(0,0,0,.45);
+  border:1px dashed rgba(245,197,24,.35);
+  border-radius: var(--raio);
+}
+.icone-sucesso{ filter: drop-shadow(0 6px 18px rgba(40,199,111,.35)); }
+.icone-pix{ filter:none; background: rgba(245,197,24,.14); }
+.lista-resumo div{ border-bottom:1px dashed rgba(255,255,255,.09); padding:.68rem 0; }
+
+/* ---------------------------------------------------------
+   12) BADGES, HISTÓRICO, ADMIN, STATS, TABELA
+   --------------------------------------------------------- */
+.selo-status{
+  border-radius: var(--raio-pill);
+  border:1px solid transparent;
+  letter-spacing:.06em;
+}
+.selo-status--confirmado{ border-color: rgba(40,199,111,.4); }
+.selo-status--pendente{ border-color: rgba(255,165,0,.4); }
+.selo-status--cancelado{ border-color: rgba(220,53,69,.4); }
+
+.item-historico{
+  transition: transform var(--transicao), border-color var(--transicao), box-shadow var(--transicao);
+}
+.item-historico:hover{ transform: translateY(-3px); border-color: rgba(245,197,24,.3); box-shadow: var(--sombra); }
+
+.stat-card{ transition: transform var(--transicao), border-color var(--transicao); }
+.stat-card:hover{ transform: translateY(-3px); border-color: rgba(245,197,24,.3); }
+.stat-card__numero{
+  background: linear-gradient(135deg, #ffe9a3, var(--ouro));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: var(--ouro);
+  font-variant-numeric: tabular-nums;
+}
+.stat-card--acao{ border-style:dashed; border-color: rgba(245,197,24,.3); color: var(--ouro); }
+
+.tabela-wrapper{ border-radius: var(--raio-grande); border:1px solid rgba(255,255,255,.08); }
+.tabela-admin th{
+  background: rgba(245,197,24,.05);
+  letter-spacing:.09em;
+  position: sticky; top:0; backdrop-filter: blur(8px);
+}
+.tabela-admin tbody tr{ transition: background var(--transicao); }
+.tabela-admin tbody tr:hover{ background: rgba(255,255,255,.03); }
+.btn-excluir{
+  border-radius: var(--raio-pill);
+  transition: background var(--transicao), color var(--transicao), border-color var(--transicao);
+}
+.btn-excluir:hover{ background: rgba(220,53,69,.14); color:#ff8a97; }
+
+/* ---------------------------------------------------------
+   13) MODAL E PAINEL DE ACESSIBILIDADE
+   --------------------------------------------------------- */
+.modal{ background: rgba(4,4,6,.72); backdrop-filter: blur(8px); animation: fade .2s ease; }
+@keyframes fade{ from{opacity:0} to{opacity:1} }
+.modal__caixa{
+  background: linear-gradient(170deg, var(--bg-3), var(--bg-1));
+  border:1px solid rgba(245,197,24,.28);
+  border-radius: 22px;
+  box-shadow: var(--sombra-alta);
+  animation: subir .26s cubic-bezier(.4,0,.2,1);
+}
+@keyframes subir{ from{ opacity:0; transform: translateY(14px) scale(.985);} to{ opacity:1; transform:none;} }
+.modal__fechar{
+  width:38px; height:38px; border-radius:50%;
+  background: var(--superficie); display:grid; place-items:center;
+  transition: background var(--transicao);
+}
+.modal__fechar:hover{ background: var(--superficie-2); }
+.grafico-barras__trilha{ height:18px; border-radius:999px; background: rgba(255,255,255,.07); }
+.grafico-barras__preenchimento{
+  background: linear-gradient(90deg, var(--ouro-forte), #ffe9a3);
+  border-radius:999px;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+.fab-acessibilidade{
+  background: linear-gradient(140deg, #ffd75e, var(--ouro-forte));
+  color:#241a00;
+  box-shadow: var(--brilho-ouro), var(--sombra-alta);
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+.fab-acessibilidade:hover{ transform: translateY(-3px) rotate(-6deg); }
+.painel-acessibilidade{
+  background: linear-gradient(180deg, var(--bg-3), var(--bg-1));
+  border-left:1px solid rgba(245,197,24,.28);
+  box-shadow: -24px 0 60px rgba(0,0,0,.6);
+  animation: entrar-lateral .26s cubic-bezier(.4,0,.2,1);
+}
+@keyframes entrar-lateral{ from{ transform: translateX(24px); opacity:0; } to{ transform:none; opacity:1; } }
+.opcao-acessibilidade{ padding:.5rem 0; }
+
+/* ---------------------------------------------------------
+   14) RODAPÉ
+   --------------------------------------------------------- */
+.rodape{ border-top:1px solid rgba(255,255,255,.07); background: rgba(0,0,0,.28); }
+.rodape__logo{ border-radius:14px; }
+.rodape__redes a{
+  border-color: rgba(245,197,24,.3);
+  background: var(--superficie);
+  transition: transform var(--transicao), background var(--transicao), border-color var(--transicao);
+}
+.rodape__redes a:hover{ transform: translateY(-3px); border-color: var(--ouro); background: rgba(245,197,24,.14); }
+
+/* ---------------------------------------------------------
+   15) MENU MOBILE (gaveta)
+   --------------------------------------------------------- */
+@media (max-width: 760px){
+  .nav{
+    top: var(--altura-header);
+    background: linear-gradient(180deg, rgba(19,18,24,.98), rgba(13,12,17,.98));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom:1px solid rgba(245,197,24,.22);
+    box-shadow: 0 24px 50px rgba(0,0,0,.6);
+    border-radius: 0 0 18px 18px;
+    padding:1.2rem 1.5rem 1.5rem;
+    transition: transform .3s cubic-bezier(.4,0,.2,1), opacity .3s;
+  }
+  .nav:not(.aberto){ opacity:0; pointer-events:none; }
+  .nav.aberto{ opacity:1; transform: translateY(0); }
+  .nav__lista{ gap:.35rem; }
+  .nav__lista li{ border-bottom:1px solid rgba(255,255,255,.05); }
+  .nav__lista li:last-child{ border-bottom:none; }
+  .nav__lista a{ display:block; padding:.85rem 0; font-size:.82rem; }
+
+  /* Backdrop do menu (fecha ao tocar fora) */
+  .nav.aberto::before{
+    content:""; position:fixed; inset: var(--altura-header) 0 0 0;
+    background: rgba(0,0,0,.5); z-index:-1;
+  }
+
+  .header__acoes{ gap:.45rem; }
+  .header__acoes .hamburguer{ display:flex; }
+}
+
+/* ---------------------------------------------------------
+   16) RESPONSIVO FINO
+   --------------------------------------------------------- */
+@media (max-width: 900px){
+  .secao{ padding: 3.6rem 1.25rem; }
+  .card{ padding:1.8rem 1.5rem; }
+  .cartao-citacao{ padding:1.8rem; }
+}
+@media (max-width: 560px){
+  .titulo-secao{ font-size: clamp(1.5rem, 6.4vw, 2rem); }
+  .btn--lg{ padding:.95rem 1.6rem; font-size:.88rem; }
+  .acoes-agenda .btn{ width:100%; }
+  .resumo-pagamento{ grid-template-columns:1fr; }
+  .cartao-auth{ padding:1.2rem 1.4rem 1.8rem; }
+  .pix-qr{ width:min(240px, 72vw); height:min(240px, 72vw); }
+}
+
+/* ---------------------------------------------------------
+   17) RESPEITO A "REDUZIR MOVIMENTO"
+   --------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001s !important; animation-iteration-count:1 !important;
+     transition-duration:.001s !important; scroll-behavior:auto !important; }
+}
+html.a11y-reduzir-movimento .header,
+html.a11y-reduzir-movimento .card,
+html.a11y-reduzir-movimento .opcao-selecao,
+html.a11y-reduzir-movimento .item-historico,
+html.a11y-reduzir-movimento .depoimento,
+html.a11y-reduzir-movimento .stat-card{ transition:none !important; }
+html.a11y-reduzir-movimento .card:hover,
+html.a11y-reduzir-movimento .opcao-selecao:hover,
+html.a11y-reduzir-movimento .item-historico:hover,
+html.a11y-reduzir-movimento .depoimento:hover,
+html.a11y-reduzir-movimento .stat-card:hover{ transform:none !important; }
