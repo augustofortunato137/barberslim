@@ -56,24 +56,46 @@ async function init() {
 // ------------------------------------------------------------
 // 3) SEED DO ADMIN (garante que o usuário admin exista)
 // ------------------------------------------------------------
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@barberslim.com';
-const ADMIN_SENHA = process.env.ADMIN_SENHA || 'TCC2026';
+// As credenciais do admin vêm das VARIÁVEIS DE AMBIENTE — nunca do código
+// (este repositório é público). Se não estiverem definidas, o admin
+// existente não é alterado.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || null;
+const ADMIN_SENHA = process.env.ADMIN_SENHA || null;
 
 async function seedAdmin() {
     const { rows } = await pool.query('SELECT * FROM usuarios WHERE id = $1', ['admin']);
-    const hash = await bcrypt.hash(ADMIN_SENHA, 10); // 10 = fator de custo
+
     if (rows.length === 0) {
+        // Primeira criação: exige as variáveis de ambiente
+        if (!ADMIN_EMAIL || !ADMIN_SENHA) {
+            console.warn('[database] ADMIN_EMAIL/ADMIN_SENHA não definidos — admin não criado.');
+            return;
+        }
+        const hash = await bcrypt.hash(ADMIN_SENHA, 10); // 10 = fator de custo
         await pool.query(
             `INSERT INTO usuarios (id, nome, email, whatsapp, senha_hash, tipo, criado_em)
              VALUES ($1, $2, $3, $4, $5, 'admin', NOW())`,
             ['admin', 'Administrador', ADMIN_EMAIL, '14996628499', hash]
         );
         console.log('[database] Admin criado:', ADMIN_EMAIL);
-    } else if (!(await bcrypt.compare(ADMIN_SENHA, rows[0].senha_hash))) {
-        // A senha mudou no .env -> atualiza o hash
-        await pool.query('UPDATE usuarios SET senha_hash = $1 WHERE id = $2', [hash, 'admin']);
-        console.log('[database] Senha do admin atualizada');
+        return;
     }
+
+    // Já existe: sincroniza apenas o que foi definido no ambiente
+    const emailFinal = ADMIN_EMAIL || rows[0].email;
+    const emailMudou = emailFinal !== rows[0].email;
+    const senhaMudou = ADMIN_SENHA
+        ? !(await bcrypt.compare(ADMIN_SENHA, rows[0].senha_hash))
+        : false;
+    if (!emailMudou && !senhaMudou) return;
+
+    const hash = senhaMudou ? await bcrypt.hash(ADMIN_SENHA, 10) : rows[0].senha_hash;
+    await pool.query(
+        'UPDATE usuarios SET email = $1, senha_hash = $2 WHERE id = $3',
+        [emailFinal, hash, 'admin']
+    );
+    console.log('[database] Admin atualizado:', emailFinal,
+        emailMudou && senhaMudou ? '(e-mail e senha)' : emailMudou ? '(e-mail)' : '(senha)');
 }
 
 // ------------------------------------------------------------
