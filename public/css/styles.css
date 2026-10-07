@@ -1760,3 +1760,61 @@ html.tema-claro .link-admin{ color: rgba(11,46,87,.5); }
 
 /* ---------- Acessibilidade: alto contraste tem prioridade ---------- */
 html.a11y-contraste body{ background:#000 !important; }
+
+/* ===========================================================
+   CAMPO DE DATA EM VERDE (modo escuro)
+   =========================================================== */
+
+/* ------------------------------------------------------------------
+   CAMPO DE DATA ("Escolha data e horário") — DESTAQUE VERDE NO ESCURO
+   ------------------------------------------------------------------
+   Pedido: o seletor de data deve ficar VERDE no modo escuro, para se
+   distinguir dos outros campos (que seguem neutros).
+
+   Detalhes da implementação:
+     - As regras usam :not(.tema-claro), então NÃO afetam o tema claro
+       (que continua azul, como já estava).
+     - O fundo em degradê, a borda e o anel de foco usam o verde do tema.
+     - O ícone nativo do calendário é um glifo escuro; o filtro abaixo
+       o converte para o mesmo verde do destaque.
+   ------------------------------------------------------------------ */
+
+/* Rótulo "Data" em verde, para reforçar que este campo é especial */
+html:not(.tema-claro) .campo--data > span{
+  color: var(--ouro);
+}
+
+/* O campo em si */
+html:not(.tema-claro) .campo input[type="date"]{
+  border:1px solid rgba(34,197,94,.55);
+  background: linear-gradient(180deg, rgba(34,197,94,.15), rgba(34,197,94,.05));
+  color: var(--texto);
+  font-weight:600;
+  box-shadow: 0 0 0 1px rgba(34,197,94,.10), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: border-color var(--transicao), box-shadow var(--transicao), background var(--transicao);
+}
+html:not(.tema-claro) .campo input[type="date"]:hover{
+  border-color: rgba(34,197,94,.85);
+  background: linear-gradient(180deg, rgba(34,197,94,.22), rgba(34,197,94,.09));
+}
+html:not(.tema-claro) .campo input[type="date"]:focus{
+  outline:none;
+  border-color: var(--ouro);                    /* verde principal */
+  box-shadow: 0 0 0 4px rgba(34,197,94,.22);
+}
+
+/* Ícone do calendário em verde */
+html:not(.tema-claro) .campo input[type="date"]::-webkit-calendar-picker-indicator{
+  opacity:1;
+  cursor:pointer;
+  filter: invert(58%) sepia(85%) saturate(480%) hue-rotate(85deg) brightness(1.05) contrast(1.05);
+}
+
+/* O texto interno do calendário nativo (mes/ano) também em verde */
+html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-text,
+html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-day-field,
+html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-month-field,
+html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-year-field{
+  color: var(--ouro-claro);
+}
