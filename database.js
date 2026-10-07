@@ -35,8 +35,19 @@ if (!DATABASE_URL) {
 
 const pool = new Pool({
     connectionString: DATABASE_URL,
-    // Neon/Supabase exigem SSL. Use PGSSL=false apenas em bancos locais.
-    ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false }
+    // Neon/Supabase exigem SSL. Use PGSSL=false para desligar (local).
+    ssl: process.env.PGSSL === 'false' ? false : { rejectUnauthorized: false },
+    // Robustez: limites explicitos para uma consulta travada nao derrubar o site
+    max: Number(process.env.PG_MAX) || 10,
+    idleTimeoutMillis: Number(process.env.PG_IDLE_MS) || 30000,
+    connectionTimeoutMillis: Number(process.env.PG_CONNECT_MS) || 10000,
+    statement_timeout: Number(process.env.PG_STATEMENT_MS) || 15000,
+    query_timeout: Number(process.env.PG_STATEMENT_MS) || 15000
+});
+
+// Robustez: erro em conexao ociosa do pool nao pode derrubar o processo
+pool.on('error', (erro) => {
+    console.error('[database] Erro inesperado no pool:', erro.message);
 });
 
 pool.on('error', (err) => {
@@ -306,8 +317,16 @@ async function listarServicos() {
 // ------------------------------------------------------------
 // EXPORTAÇÃO
 // ------------------------------------------------------------
+// Robustez: verifica a saude do banco (usado pelo /api/health)
+async function ping() {
+    const inicio = Date.now();
+    await pool.query('SELECT 1');
+    return Date.now() - inicio;
+}
+
 module.exports = {
     init,
+    ping,
     pool,
     login,
     criarUsuario,
