@@ -217,9 +217,26 @@ const RE_ID       = /^[\w-]{1,64}$/;
 // ---------------------------------------------------------------------------
 
 /** GET /api/health — verifica se o servidor está no ar. */
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', hora: new Date().toISOString() });
-});
+app.get('/api/health', asyncRoute(async (req, res) => {
+  try {
+    const ms = await db.ping();
+    res.json({
+      status: 'ok',
+      banco: 'ok',
+      latencia_banco_ms: ms,
+      uptime_s: Math.round(process.uptime()),
+      hora: new Date().toISOString()
+    });
+  } catch (e) {
+    // 503 = a Render marca o servico como doente em vez de fingir que esta tudo bem
+    res.status(503).json({
+      status: 'degradado',
+      banco: 'falha',
+      erro: 'Banco de dados indisponivel',
+      hora: new Date().toISOString()
+    });
+  }
+}));
 
 /** POST /api/auth/register — cria conta de cliente e retorna token. */
 app.post('/api/auth/register', limiteAuth, asyncRoute(async (req, res) => {
@@ -299,15 +316,38 @@ app.post('/api/agendamentos', limiteReserva, asyncRoute(async (req, res) => {
   // Validações comuns (formato estrito no servidor)
   if (d.cliente_nome.length < 2) return res.status(400).json({ erro: 'Nome do cliente é obrigatório.' });
   if (!RE_BARBEIRO.test(String(d.barbeiro_id || ''))) return res.status(400).json({ erro: 'Selecione um barbeiro válido.' });
-  if (!Array.isArray(d.servicos) || d.servicos.length === 0 || d.servicos.length > 8) {
+  if (!Array.isArray(d.servicos_ids) || d.servicos_ids.length === 0 || d.servicos_ids.length > 8) {
     return res.status(400).json({ erro: 'Selecione entre 1 e 8 serviços.' });
   }
   if (!RE_DATA.test(String(d.data || ''))) return res.status(400).json({ erro: 'Data inválida.' });
   if (!RE_HORARIO.test(String(d.horario || ''))) return res.status(400).json({ erro: 'Horário inválido.' });
+
+  // Robustez: rejeita data no passado. O frontend sozinho nao e confiavel.
+  const hojeStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: process.env.TZ_BARBEARIA || 'America/Sao_Paulo',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date());
+  if (String(d.data) < hojeStr) {
+    return res.status(400).json({ erro: 'Nao e possivel agendar em uma data passada.' });
+  }
   if (d.pagamento && !['pix', 'dinheiro'].includes(d.pagamento)) {
     return res.status(400).json({ erro: 'Forma de pagamento inválida.' });
   }
-  const total = Math.min(Math.max(Number(d.total) || 0, 0), 100000);
+  // --- Robustez: o servidor recalcula tudo a partir do banco ---
+  const catalogo = await db.listarServicos();
+  const idsPedidos = (Array.isArray(d.servicos_ids) ? d.servicos_ids : []).map(String);
+  const escolhidos = catalogo.filter((s) => idsPedidos.includes(String(s.id)));
+  if (!escolhidos.length) {
+    return res.status(400).json({ erro: 'Selecione pelo menos um servico valido.' });
+  }
+  const total = Math.round(escolhidos.reduce((soma, s) => soma + Number(s.preco || 0), 0) * 100) / 100;
+  const servicosNomes = escolhidos.map((s) => s.nome);
+
+  const barbeiro = (await db.listarBarbeiros()).find((b) => String(b.id) === String(d.barbeiro_id));
+  if (!barbeiro) {
+    return res.status(400).json({ erro: 'Barbeiro nao encontrado.' });
+  }
+  const barbeiroNome = barbeiro.nome;
 
   // Horário ocupado? (server-side)
   if (await db.slotOcupado(d.barbeiro_id, d.data, d.horario)) {
@@ -327,8 +367,8 @@ app.post('/api/agendamentos', limiteReserva, asyncRoute(async (req, res) => {
       cliente_nome: d.cliente_nome,
       cliente_whatsapp: d.cliente_whatsapp || '',
       barbeiro_id: d.barbeiro_id,
-      barbeiro_nome: d.barbeiro_nome,
-      servicos: d.servicos.map(s => String(s).slice(0, 60)),
+      barbeiro_nome: barbeiroNome,
+      servicos: servicosNomes,
       servicos_ids: (d.servicos_ids || []).map(s => String(s).slice(0, 20)),
       total: total,
       data: d.data,
