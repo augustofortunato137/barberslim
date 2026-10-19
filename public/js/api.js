@@ -120,6 +120,11 @@
     /** Exclui um agendamento (admin). */
     excluirAgendamentoAsync: (id) => chamar('/api/agendamentos/' + id, { method: 'DELETE' }),
 
+    /** Cancela um agendamento (marca como cancelado e libera o horário).
+     *  O cliente só consegue cancelar os PRÓPRIOS — o servidor confere o
+     *  dono pelo id que está dentro do token JWT, não por nada enviado aqui. */
+    cancelarAgendamentoAsync: (id) => chamar('/api/agendamentos/' + id + '/cancelar', { method: 'POST' }),
+
     /** Dados de pagamento PIX de um agendamento (copia e cola + QR).
      *  Com Mercado Pago ativo, precisa do e-mail do pagador para gerar a
      *  cobrança real (query ?email=). */
