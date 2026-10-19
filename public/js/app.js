@@ -1015,13 +1015,15 @@
       document.getElementById('pix-copia').value = r.copiaECola || '';
       document.getElementById('div-gerar-pix').hidden = true;
       document.getElementById('div-pix-pronto').hidden = false;
-      document.getElementById('btn-confirmar-pagamento').hidden = false;
-      document.getElementById('dica-pagamento').textContent =
-        (r.gateway === 'mercadopago')
-          ? 'Pagamento do Mercado Pago: ao pagar, seu horário é confirmado automaticamente.'
-          : 'Após pagar, clique em "Já paguei" para liberar seu horário.';
+      // Com Mercado Pago quem confirma é o WEBHOOK — o botão "Já paguei" NÃO
+      // pode aparecer (antes ele aparecia e permitia liberar o horário sem pagar).
+      const ehMP = r.gateway === 'mercadopago';
+      document.getElementById('btn-confirmar-pagamento').hidden = ehMP;
+      document.getElementById('dica-pagamento').textContent = ehMP
+        ? 'Pagamento do Mercado Pago: ao pagar, seu horário é confirmado automaticamente (pode levar alguns segundos).'
+        : 'Após pagar, clique em "Já paguei" para liberar seu horário.';
       // Com Mercado Pago, fica de olho no status e confirma sozinho quando aprovar.
-      if (r.gateway === 'mercadopago') iniciarPolling(ag);
+      if (ehMP) iniciarPolling(ag);
     } catch (e) {
       const precisaEmail = !!(e && e.precisaEmail) || /e-mail/i.test((e && e.message) || '');
       definirStatus('msg-pagamento', (e && e.message) || 'Não foi possível gerar o PIX. Tente novamente.', 'erro');
@@ -1045,9 +1047,9 @@
       tentativas++;
       if (tentativas > MAX_TENTATIVAS) {
         pararPolling();
-        definirStatus('msg-pagamento', 'Ainda não identificamos o pagamento. Se já pagou, clique em "Já paguei".', 'erro');
-        const b = document.getElementById('btn-confirmar-pagamento');
-        if (b) b.hidden = false;
+        // NÃO revelamos o botão "Já paguei" aqui: com Mercado Pago a confirmação
+        // vem do webhook, e liberar o botão manual permitiria burlar o pagamento.
+        definirStatus('msg-pagamento', 'Ainda não identificamos o pagamento. Se você pagou agora, aguarde mais um pouco ou fale com a barbearia.', 'erro');
         return;
       }
       try {
