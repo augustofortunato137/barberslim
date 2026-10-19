@@ -1181,9 +1181,38 @@
           <strong>${esc(ag.barbeiroNome)} — ${esc(ag.servicos.join(', '))}</strong>
           <span>${formatarDataBR(ag.data)} às ${esc(ag.horario)} · R$ ${ag.total.toFixed(2)} · ${esc(ag.pagamento === 'dinheiro' ? 'Dinheiro' : 'PIX')}</span>
         </div>
-        ${rotuloStatus(ag)}
+        <div class="item-historico__acoes">
+          ${rotuloStatus(ag)}
+          ${ag.status === 'cancelado' ? '' : `
+            <button type="button" class="btn-cancelar-item" data-cancelar="${esc(ag.id)}"
+                    title="Cancelar este agendamento">Cancelar</button>`}
+        </div>
       </div>
     `).join('');
+
+    // Liga o clique de cada botão "Cancelar".
+    // Importante: cancelar NÃO apaga o registro — apenas marca como
+    // 'cancelado' e, com isso, o horário volta a ficar livre para outros.
+    container.querySelectorAll('[data-cancelar]').forEach(botao => {
+      botao.addEventListener('click', async function () {
+        if (!confirm('Deseja cancelar este agendamento? O horário voltará a ficar disponível.')) return;
+        const id = this.dataset.cancelar;
+        this.disabled = true;   // evita clique duplo enquanto a requisição vai
+        try {
+          if (backendAtivo) {
+            await window.BarberSlimAPI.cancelarAgendamentoAsync(id);
+          } else {
+            // Modo demonstração (sem backend): marca só no armazenamento local
+            setAgendamentos(getAgendamentos().map(a =>
+              a.id === id ? Object.assign({}, a, { status: 'cancelado' }) : a));
+          }
+          montarHistorico();   // redesenha a lista, já com o selo "Cancelado"
+        } catch (e) {
+          this.disabled = false;
+          alert('Não foi possível cancelar: ' + ((e && e.message) || 'falha na comunicação.'));
+        }
+      });
+    });
   }
 
   /* ---------------------------------------------------------
