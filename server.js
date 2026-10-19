@@ -523,11 +523,40 @@ app.get('/api/agendamentos/:id/status', asyncRoute(async (req, res) => {
 }));
 
 /**
- * POST /api/agendamentos/:id/pagar — confirma o pagamento PIX.
- * Marca o agendamento como 'confirmado' (liberado).
+ * POST /api/agendamentos/:id/pagar — confirmação MANUAL do PIX estático.
+ *
+ * SEGURANÇA: esta rota só faz sentido quando NÃO há gateway automático.
+ *   • Com Mercado Pago ativo, quem confirma é o WEBHOOK (só ele sabe se o
+ *     dinheiro caiu). Deixar o cliente se auto-confirmar aqui permitia
+ *     liberar o horário SEM PAGAR — por isso, nesse caso, só o ADMIN pode
+ *     forçar a confirmação (útil se o webhook falhar).
+ *   • Sem Mercado Pago (PIX estático) não existe como verificar o pagamento:
+ *     a confirmação é manual, mas exige que seja o DONO do agendamento
+ *     (ou o admin) — antes, qualquer pessoa com o id confirmava.
  */
 app.post('/api/agendamentos/:id/pagar', limiteReserva, asyncRoute(async (req, res) => {
   if (!RE_ID.test(String(req.params.id))) return res.status(400).json({ erro: 'Identificador inválido.' });
+
+  const claim = lerToken(req);                       // pode ser null (visitante)
+  const ehAdmin = !!(claim && claim.tipo === 'admin');
+
+  // 1) Mercado Pago ativo: o cliente NÃO pode se auto-confirmar.
+  //    Só o webhook (automático) ou o admin (fallback manual) confirmam.
+  if (MP_TOKEN && !ehAdmin) {
+    return res.status(403).json({
+      erro: 'Este pagamento é confirmado automaticamente pelo Mercado Pago. Aguarde alguns segundos.'
+    });
+  }
+
+  // 2) PIX estático: confirmação manual, restrita ao dono (ou admin).
+  const ag = await db.buscarAgendamento(req.params.id);
+  if (!ag) return res.status(404).json({ erro: 'Agendamento não encontrado.' });
+  const ehDono = !!(claim && ag.usuario_id && ag.usuario_id === claim.id);
+  // Agendamentos de visitante (sem conta) não têm dono a quem exigir login.
+  if (ag.usuario_id && !ehAdmin && !ehDono) {
+    return res.status(403).json({ erro: 'Você não pode confirmar este agendamento.' });
+  }
+
   const ok = await db.marcarPago(req.params.id);
   if (!ok) return res.status(404).json({ erro: 'Agendamento não encontrado ou já cancelado.' });
   res.json(await db.buscarAgendamento(req.params.id));
