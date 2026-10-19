@@ -394,6 +394,31 @@ app.delete('/api/agendamentos/:id', requireAdmin, asyncRoute(async (req, res) =>
 }));
 
 /**
+ * POST /api/agendamentos/:id/cancelar — EXIGE LOGIN (cliente ou admin).
+ *
+ * Marca o agendamento como 'cancelado' (NÃO apaga o registro) e, com isso,
+ * LIBERA o horário automaticamente — o índice único do banco ignora as
+ * linhas canceladas.
+ *
+ * - Cliente: só cancela os PRÓPRIOS agendamentos (o id vem do token JWT).
+ * - Admin:   cancela o de qualquer cliente.
+ *
+ * É diferente do DELETE acima, que só o admin pode e apaga o registro de vez.
+ */
+app.post('/api/agendamentos/:id/cancelar', requireAuth, asyncRoute(async (req, res) => {
+  if (!RE_ID.test(String(req.params.id))) return res.status(400).json({ erro: 'Identificador inválido.' });
+
+  // Admin -> null (cancela qualquer um). Cliente -> o próprio id do token.
+  const donoId = req.claim.tipo === 'admin' ? null : req.claim.id;
+  const ok = await db.cancelarAgendamento(req.params.id, donoId);
+
+  // Resposta única para "não existe", "é de outra pessoa" e "já cancelado":
+  // assim ninguém descobre ids de agendamentos alheios.
+  if (!ok) return res.status(404).json({ erro: 'Agendamento não encontrado ou já cancelado.' });
+  res.json({ ok: true, status: 'cancelado' });
+}));
+
+/**
  * GET /api/agendamentos/:id/pix — dados de pagamento PIX de um agendamento.
  * PÚBLICO (só contém dados de cobrança, nada pessoal do cliente).
  *
