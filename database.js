@@ -267,6 +267,42 @@ async function excluirAgendamento(id) {
 }
 
 /**
+ * Cancela um agendamento (marca como 'cancelado') — SEM apagar o registro.
+ *
+ * Por que marcar em vez de apagar?
+ *   1. O histórico do cliente continua mostrando que aquele horário existiu
+ *      e foi cancelado (transparência).
+ *   2. O índice único anti-duplicidade (uq_agendamento_slot) ignora linhas
+ *      com status 'cancelado' — ou seja, ao cancelar, o horário é LIBERADO
+ *      automaticamente para outra pessoa, sem precisar de mais nada.
+ *
+ * @param {string} id
+ * @param {string|null} usuarioId
+ *        - CLIENTE: informe o id que veio do token -> só cancela se for o DONO
+ *        - ADMIN:   informe null -> cancela o agendamento de qualquer cliente
+ * @returns {Promise<boolean>} true se realmente cancelou algo
+ */
+async function cancelarAgendamento(id, usuarioId) {
+    // Cliente: a cláusula usuario_id = $2 garante que ele não cancele o
+    // agendamento de outra pessoa, mesmo sabendo o id (evita "IDOR").
+    if (usuarioId) {
+        const r = await pool.query(
+            `UPDATE agendamentos SET status = 'cancelado'
+             WHERE id = $1 AND usuario_id = $2 AND status != 'cancelado'`,
+            [id, usuarioId]
+        );
+        return r.rowCount > 0;
+    }
+    // Admin: sem filtro de dono.
+    const r = await pool.query(
+        `UPDATE agendamentos SET status = 'cancelado'
+         WHERE id = $1 AND status != 'cancelado'`,
+        [id]
+    );
+    return r.rowCount > 0;
+}
+
+/**
  * Verifica se um horário já está ocupado para um barbeiro numa data
  * (agendamentos não cancelados). Evita duplo agendamento no servidor.
  */
@@ -336,6 +372,7 @@ module.exports = {
     buscarAgendamento,
     listarAgendamentos,
     excluirAgendamento,
+    cancelarAgendamento,
     marcarPago,
     salvarPagamentoMP,
     marcarPagoPorPaymentMP,
