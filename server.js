@@ -30,6 +30,13 @@ const mercadopago = require('./mercadopago');
 const PORT = process.env.PORT || 3000;
 // Segredo para assinar os tokens. Em produção use um valor longo/aleatório.
 const JWT_SECRET = process.env.JWT_SECRET || 'troque-este-segredo-em-producao';
+// SEGURANÇA: se JWT_SECRET não estiver definido, o valor padrão acima é
+// PÚBLICO (está no repositório). Com ele qualquer pessoa poderia FORJAR um
+// token de admin. Em produção a variável existe; se faltar, avisamos bem alto.
+if (!process.env.JWT_SECRET) {
+  console.error('[server] ATENÇÃO GRAVE: JWT_SECRET não definido! Usando o valor padrão (inseguro).');
+  console.error('[server] Defina JWT_SECRET nas variáveis de ambiente e reinicie.');
+}
 
 // Token de PRODUÇÃO do Mercado Pago. Se ausente, o app volta ao PIX estático.
 const MP_TOKEN = process.env.MERCADOPAGO_ACCESS_TOKEN || '';
@@ -431,6 +438,16 @@ app.get('/api/agendamentos/:id/pix', limiteReserva, asyncRoute(async (req, res) 
   const ag = await db.buscarAgendamento(req.params.id);
   if (!ag) return res.status(404).json({ erro: 'Agendamento não encontrado.' });
 
+  // SEGURANÇA: se o agendamento pertence a uma conta, só o DONO (ou admin)
+  // pode ver o pagamento. Antes, qualquer pessoa que tivesse o id via o valor
+  // total e ainda conseguia gerar cobranças no Mercado Pago em nome da loja.
+  const claimPix = lerToken(req);
+  const ehAdminPix = !!(claimPix && claimPix.tipo === 'admin');
+  const ehDonoPix = !!(claimPix && ag.usuario_id && ag.usuario_id === claimPix.id);
+  if (ag.usuario_id && !ehAdminPix && !ehDonoPix) {
+    return res.status(403).json({ erro: 'Você não pode acessar o pagamento deste agendamento.' });
+  }
+
   // --- PIX via Mercado Pago (cria a cobrança real) ---
   if (MP_TOKEN) {
     const email = (req.query.email || '').trim().toLowerCase();
@@ -519,6 +536,15 @@ app.get('/api/agendamentos/:id/status', asyncRoute(async (req, res) => {
   if (!RE_ID.test(String(req.params.id))) return res.status(400).json({ erro: 'Identificador inválido.' });
   const ag = await db.buscarAgendamento(req.params.id);
   if (!ag) return res.status(404).json({ erro: 'Agendamento não encontrado.' });
+
+  // Mesma regra do /pix: se tem dono, só o dono (ou admin) consulta o status.
+  const claimSt = lerToken(req);
+  const ehAdminSt = !!(claimSt && claimSt.tipo === 'admin');
+  const ehDonoSt = !!(claimSt && ag.usuario_id && ag.usuario_id === claimSt.id);
+  if (ag.usuario_id && !ehAdminSt && !ehDonoSt) {
+    return res.status(403).json({ erro: 'Você não pode consultar este agendamento.' });
+  }
+
   res.json({ status: ag.status, forma_pagamento: ag.forma_pagamento });
 }));
 
