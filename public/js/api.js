@@ -72,6 +72,7 @@
     if (!resposta.ok) {
       // Transforma o erro do backend em exceção para tratamento no app.js
       const erro = new Error(dados.erro || 'Erro de comunicação com o servidor.');
+      erro.status = resposta.status;              // ex.: 401, 403, 409
       if (dados.precisaEmail) erro.precisaEmail = true; // repassa flag do /pix
       throw erro;
     }
