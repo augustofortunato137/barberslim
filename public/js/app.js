@@ -13,18 +13,16 @@
     USUARIOS: 'bsp_usuarios',
     SESSAO: 'bsp_sessao',
     AGENDAMENTOS: 'bsp_agendamentos',
-    A11Y: 'bsp_acessibilidade',
-    ADMIN_SALVO: 'bsp_admin_salvo'  // acesso admin mantido (voltar sem senha)
+    A11Y: 'bsp_acessibilidade'
   };
 
-  /** Guarda a sessão do admin em uma chave separada para permitir
-   *  "voltar ao painel" sem digitar senha novamente (botão Manter conectado). */
-  function salvarAdminSalvo() {
-    const s = getSessao();
-    if (s && s.tipo === 'admin') localStorage.setItem(CHAVES.ADMIN_SALVO, JSON.stringify(s));
-  }
-  function getAdminSalvo() { return lerStorage(CHAVES.ADMIN_SALVO, null); }
-  function limparAdminSalvo() { localStorage.removeItem(CHAVES.ADMIN_SALVO); }
+  // LIMPEZA DE VERSÃO ANTIGA:
+  // Antes existia uma chave separada ('bsp_admin_salvo') que guardava a sessão
+  // do admin para mostrar um botão "Voltar ao painel (acesso salvo)" — mesmo
+  // quando o usuário NÃO estava logado. Esse mecanismo foi removido: agora o
+  // painel só abre pelo botão "Painel" do cabeçalho, que exige sessão de
+  // admin. Aqui apagamos o resíduo que ficou no navegador de quem já usou.
+  try { localStorage.removeItem('bsp_admin_salvo'); } catch (e) { /* ignora */ }
 
   const ADMIN = { email: 'admin@barberslim.com', senha: 'TCC2026' };
 
@@ -235,7 +233,6 @@
     if (nomeView === 'agendamento') montarAgendamento();
     if (nomeView === 'historico') montarHistorico();
     if (nomeView === 'admin') montarAdmin();
-    if (nomeView === 'admin-login') atualizarAcessoAdminSalvo();
 
     // Acessibilidade: move o foco para o título da nova tela
     const primeiroFoco = document.querySelector(`.view[data-view="${nomeView}"] h1, .view[data-view="${nomeView}"] h2`);
@@ -595,7 +592,6 @@
           return;
         }
         setSessao({ tipo: 'admin', userId: 'admin', nome: 'Administrador', token: res.token });
-        if (document.getElementById('admin-lembrar').checked) salvarAdminSalvo();
         atualizarHeaderSessao();
         definirStatus('msg-admin-login', 'Acesso concedido!', 'sucesso');
         setTimeout(() => irPara('admin'), 500);
@@ -608,7 +604,6 @@
     // === Modo demonstração (localStorage) ===
     if (email === ADMIN.email && senha === ADMIN.senha) {
       setSessao({ tipo: 'admin', userId: 'admin', nome: 'Administrador' });
-      if (document.getElementById('admin-lembrar').checked) salvarAdminSalvo();
       atualizarHeaderSessao();
       definirStatus('msg-admin-login', 'Acesso concedido!', 'sucesso');
       setTimeout(() => irPara('admin'), 500);
@@ -623,47 +618,25 @@
     irPara('home');
   });
 
-  /** Mostra/oculta o botão "Voltar ao painel (acesso salvo)" na tela de login
-   *  admin. Existe só quando o admin marcou "Manter conectado". */
-  function atualizarAcessoAdminSalvo() {
-    const tem = !!getAdminSalvo();
-    const b = document.getElementById('btn-voltar-admin');
-    const e = document.getElementById('btn-esquecer-admin');
-    if (b) b.hidden = !tem;
-    if (e) e.hidden = !tem;
-  }
-
-  // Volta ao painel SEM digitar a senha (restaura a sessão salva do admin).
-  document.getElementById('btn-voltar-admin').addEventListener('click', function () {
-    const salvo = getAdminSalvo();
-    if (!salvo) { atualizarAcessoAdminSalvo(); return; }
-    setSessao(salvo);
-    atualizarHeaderSessao();
-    definirStatus('msg-admin-login', '', '');
-    irPara('admin');
-  });
-
-  // Apaga o acesso salvo (logout definitivo — volta a pedir senha sempre).
-  document.getElementById('link-esquecer-admin').addEventListener('click', function (e) {
-    e.preventDefault();
-    limparAdminSalvo();
-    limparSessao();
-    atualizarAcessoAdminSalvo();
-    atualizarHeaderSessao();
-    definirStatus('msg-admin-login', 'Acesso salvo apagado. Será necessário entrar com a senha.', 'sucesso');
-    irPara('home');
-  });
+  // (O antigo botão "Voltar ao painel (acesso salvo)" e o link
+  //  "Apagar meu acesso salvo" foram removidos: eles apareciam mesmo sem o
+  //  usuário estar logado. O acesso ao painel agora é pelo botão "Painel"
+  //  do cabeçalho, visível apenas quando a sessão é de administrador.)
 
   function atualizarHeaderSessao() {
     const sessao = getSessao();
     const btnEntrar = document.getElementById('btn-entrar-nav');
     const btnSair = document.getElementById('btn-sair');
     const btnHistorico = document.getElementById('btn-historico-nav');
+    const btnPainel = document.getElementById('btn-painel-nav');
+
+    // Só é admin quem tem sessão ativa E do tipo 'admin'.
+    const ehAdmin = !!(sessao && sessao.tipo === 'admin');
 
     if (sessao) {
       btnEntrar.hidden = true;
       btnSair.hidden = false;
-      btnHistorico.hidden = sessao.tipo === 'admin';
+      btnHistorico.hidden = ehAdmin;
       // Sessões antigas podem não ter 'nome' guardado -> evita erro no split().
       const primeiroNome = String(sessao.nome || 'conta').trim().split(/\s+/)[0] || 'conta';
       btnSair.innerHTML = `<i class="fas fa-right-from-bracket" aria-hidden="true"></i> <span class="rotulo-btn">Sair (${esc(primeiroNome)})</span>`;
@@ -672,6 +645,9 @@
       btnSair.hidden = true;
       btnHistorico.hidden = true;
     }
+
+    // O botão "Painel" do cabeçalho aparece SÓ para admin logado.
+    if (btnPainel) btnPainel.hidden = !ehAdmin;
   }
 
   /* ---------------------------------------------------------
@@ -1242,6 +1218,15 @@
         cacheAgendamentos = (Array.isArray(ag) ? ag : []).map(normalizarAgendamento);
         cacheUsuarios = Array.isArray(us) ? us : [];
       } catch (e) {
+        // Sessão expirada/inválida: não mostra dado velho nem deixa entrar
+        // no painel. Limpa a sessão e manda para o login do admin.
+        if (e && e.status === 401) {
+          limparSessao();
+          atualizarHeaderSessao();
+          definirStatus('msg-admin-login', 'Sua sessão expirou. Entre novamente.', 'erro');
+          irPara('admin-login');
+          return;
+        }
         console.warn('[BarberSlim] Falha ao carregar dados do admin:', e.message);
       }
     }
