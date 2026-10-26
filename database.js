@@ -45,11 +45,16 @@ const pool = new Pool({
     query_timeout: Number(process.env.PG_STATEMENT_MS) || 15000
 });
 
-// Robustez: erro em conexao ociosa do pool nao pode derrubar o processo
-pool.on('error', (erro) => {
-    console.error('[database] Erro inesperado no pool:', erro.message);
-});
-
+// ------------------------------------------------------------------
+// TRATAMENTO DE ERRO NO POOL (obrigatório em produção!)
+// ------------------------------------------------------------------
+// O pg.Pool mantém conexões "paradas" (idle) abertas para reutilizar. Se uma
+// delas cair sozinha (banco reiniciou, rede oscilou, o Neon suspendeu o
+// compute...), o Node emite 'error' NO POOL. Sem um listener, isso vira uma
+// exceção não capturada e DERRUBA o processo inteiro.
+//
+// ATENÇÃO: havia dois listeners idênticos aqui (duplicata) — o segundo só
+// repetia o log. Mantido apenas um.
 pool.on('error', (err) => {
     console.error('[database] Erro inesperado no pool do PostgreSQL:', err.message);
 });
