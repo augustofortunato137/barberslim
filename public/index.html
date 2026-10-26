@@ -72,6 +72,13 @@
     </nav>
 
     <div class="header__acoes">
+      <!-- Botão do PAINEL ADMIN: só é exibido quando a sessão ativa é de
+           administrador (controlado por atualizarHeaderSessao no app.js).
+           Substitui o antigo botão "Voltar ao painel (acesso salvo)", que
+           aparecia mesmo sem o usuário estar logado. -->
+      <button type="button" class="btn btn--gold btn--sm" data-nav="admin" id="btn-painel-nav" hidden>
+        <i class="fas fa-gauge-high" aria-hidden="true"></i> <span class="rotulo-btn">Painel</span>
+      </button>
       <button type="button" class="btn btn--outline btn--sm" data-nav="historico" id="btn-historico-nav" hidden>
         <i class="fas fa-clock-rotate-left" aria-hidden="true"></i> <span class="rotulo-btn">Histórico</span>
       </button>
@@ -414,14 +421,8 @@
           <span>Senha</span>
           <input type="password" id="admin-senha" required>
         </label>
-        <label class="campo campo--checkbox">
-          <input type="checkbox" id="admin-lembrar" checked>
-          <span>Manter conectado (voltar ao painel sem pedir senha)</span>
-        </label>
-        <button type="button" class="btn btn--ghost btn--bloco" id="btn-voltar-admin" hidden>↩ Voltar ao painel (acesso salvo)</button>
         <button type="submit" class="btn btn--gold btn--bloco">Acessar painel</button>
         <p class="mensagem-status" id="msg-admin-login" role="status"></p>
-        <p class="links-demo" id="btn-esquecer-admin" hidden><a href="#" id="link-esquecer-admin">Apagar meu acesso salvo e sair</a></p>
       </form>
     </div>
   </section>
