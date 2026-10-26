@@ -5,7 +5,21 @@ barbearia agendar horários online: escolha do barbeiro, serviços, data/hora,
 forma de pagamento (PIX ou dinheiro) e painel administrativo.
 
 ## Demonstração online
-- **Site/API (Railway):** https://barberslim-production.up.railway.app
+- **Site/API (Render):** https://barberslim.com.br
+- **Banco de dados (Neon/PostgreSQL):** região `sa-east-1` (AWS São Paulo)
+
+## Hospedagem e tecnologias
+| Camada | Tecnologia |
+|---|---|
+| Linguagem (backend) | JavaScript — Node.js 20 |
+| Framework HTTP | Express 4 |
+| Banco de dados | PostgreSQL (Neon) |
+| Autenticação | JWT (`jsonwebtoken`) + bcrypt |
+| Segurança | Helmet (CSP), CORS, express-rate-limit |
+| Pagamento | Mercado Pago (PIX + webhook) ou PIX estático (QR local) |
+| Frontend | HTML5 + CSS3 + JavaScript puro (SPA, sem build) |
+| Hospedagem da aplicação | Render |
+| Repositório | GitHub |
 
 ## Estrutura
 ```
@@ -49,18 +63,35 @@ primeiro start via `schema.sql` + `database.js`.
 | GET | `/api/agendamentos/ocupados?data=&barbeiro_id=` | horários já ocupados (público) |
 | GET | `/api/agendamentos` | exige login (admin: todos; cliente: só os dele) |
 | POST | `/api/agendamentos` | cria agendamento (logado ou visitante) |
+| POST | `/api/agendamentos/:id/cancelar` | cancela (marca como cancelado e libera o horário) — dono ou admin |
+| GET | `/api/agendamentos/:id/pix` | dados do PIX — só o dono (ou admin) |
+| GET | `/api/agendamentos/:id/status` | status do agendamento — só o dono (ou admin) |
+| POST | `/api/agendamentos/:id/pagar` | confirmação manual (só admin quando há gateway) |
+| POST | `/api/webhooks/mercadopago` | notificação do Mercado Pago |
 | DELETE | `/api/agendamentos/:id` | exclui (somente admin) |
 | GET | `/api/usuarios` | lista usuários (somente admin) |
 
 ## Segurança
 - Senhas com **bcrypt**; autenticação por **JWT** com expiração.
-- **Helmet** (headers/CSP) + **rate limit** no login/cadastro.
+- **Helmet** (headers/CSP) + **rate limit** em login, cadastro, reserva e webhook.
 - Rotas sensíveis exigem token; cliente só vê os próprios agendamentos.
+- **Servidor é a fonte da verdade**: o total e o nome do barbeiro são
+  recalculados a partir do banco, nunca aceitos do navegador.
+- **Datas passadas** são recusadas (fuso `America/Sao_Paulo`).
 - **Anti-duplicidade de horário**: checagem no servidor + índice único no banco.
-- **Anti-XSS** no frontend (`esc()`).
-- Não há dados pessoais no endpoint público `/ocupados`.
+- **Pagamento**: com Mercado Pago ativo, só o **webhook** confirma — o cliente
+  não consegue se auto-liberar. Recursos de pagamento (`/pix`, `/status`)
+  só são acessíveis pelo dono do agendamento (ou admin).
+- **Sessão expirada** derruba o login na interface (tratamento de 401).
+- **Anti-XSS** no frontend (`esc()`) + CSP restritiva.
+- **SQL Injection**: todas as consultas são parametrizadas (`$1, $2`).
+- O endpoint público `/ocupados` devolve apenas horários — nenhum dado pessoal.
+- O acesso ao painel admin aparece na interface **apenas** com sessão de admin.
 
-## Admin padrão
-- E-mail: (definido por `ADMIN_EMAIL`, padrão `admin@barberslim.com`)
-- Senha: (definida por `ADMIN_SENHA`, padrão `TCC2026`)
-> Mude a senha pelo `ADMIN_SENHA` no ambiente de produção.
+## Admin
+- E-mail: definido pela variável **`ADMIN_EMAIL`** (nenhum valor fica no código).
+- Senha: definida por **`ADMIN_SENHA`** (guardada como hash bcrypt no banco).
+
+> Para trocar a senha: altere `ADMIN_SENHA` nas variáveis de ambiente e
+> reinicie o serviço. O `seedAdmin()` sincroniza o hash automaticamente.
+> **Nunca** comite credenciais no repositório.
