@@ -139,6 +139,9 @@
       const lista = await window.BarberSlimAPI.listarAgendamentosAsync();
       cacheAgendamentos = (Array.isArray(lista) ? lista : []).map(normalizarAgendamento);
     } catch (e) {
+      // Sessão expirada/ inválida: derruba o login local, senão a interface
+      // continuaria mostrando "Sair (nome)" como se estivesse autenticado.
+      if (e && e.status === 401) { limparSessao(); atualizarHeaderSessao(); }
       console.warn('[BarberSlim] Falha ao carregar agendamentos do backend:', e.message);
     }
   }
@@ -615,6 +618,10 @@
   document.getElementById('btn-sair').addEventListener('click', function () {
     limparSessao();
     atualizarHeaderSessao();
+    // Limpa as mensagens de status: antes o "Acesso concedido!" do painel
+    // continuava visível na tela de login mesmo depois de sair.
+    definirStatus('msg-admin-login', '', '');
+    definirStatus('msg-login', '', '');
     irPara('home');
   });
 
@@ -1137,6 +1144,9 @@
         const lista = await window.BarberSlimAPI.listarAgendamentosAsync(sessao.userId);
         meus = (Array.isArray(lista) ? lista : []).map(normalizarAgendamento);
       } catch (e) {
+        if (e && e.status === 401) {
+          limparSessao(); atualizarHeaderSessao(); irPara('login'); return;
+        }
         console.warn('[BarberSlim] Falha ao carregar histórico:', e.message);
         meus = [];
       }
