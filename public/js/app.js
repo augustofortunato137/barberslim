@@ -622,6 +622,12 @@
     // continuava visível na tela de login mesmo depois de sair.
     definirStatus('msg-admin-login', '', '');
     definirStatus('msg-login', '', '');
+    // Higiene: apaga o que foi digitado nos formulários depois de sair.
+    // O teste mostrou que a senha do admin continuava no campo (mascarada).
+    ['admin-senha', 'admin-email', 'login-senha', 'login-email'].forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
     irPara('home');
   });
 
