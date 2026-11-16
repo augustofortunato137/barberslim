@@ -231,6 +231,7 @@
     window.scrollTo({ top: 0, behavior: document.documentElement.classList.contains('a11y-reduzir-movimento') ? 'auto' : 'smooth' });
     navPrincipal.classList.remove('aberto');
     btnHamburguer.setAttribute('aria-expanded', 'false');
+    btnHamburguer.setAttribute('aria-expanded', 'false');
 
     // Algumas telas precisam ser "montadas" (preenchidas) a cada visita
     if (nomeView === 'agendamento') montarAgendamento();
@@ -1343,7 +1344,16 @@
   modalStats.addEventListener('click', function (e) { if (e.target === modalStats) fecharModalStats(); });
   // Tecla ESC fecha tanto o modal quanto o painel de acessibilidade
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { fecharModalStats(); fecharPainelA11y(); }
+    if (e.key !== 'Escape') return;
+    fecharModalStats();
+    fecharPainelA11y();
+    // ESC também fecha o menu mobile (antes ficava aberto) e devolve o foco
+    // ao botão que o abriu — comportamento esperado por quem usa teclado.
+    if (navPrincipal.classList.contains('aberto')) {
+      navPrincipal.classList.remove('aberto');
+      btnHamburguer.setAttribute('aria-expanded', 'false');
+      btnHamburguer.focus();
+    }
   });
 
   /** Desenha um gráfico de barras a partir de um objeto { rótulo: contagem }.
