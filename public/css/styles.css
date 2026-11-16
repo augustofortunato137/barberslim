@@ -633,9 +633,6 @@ html.a11y-daltonico header,
 html.a11y-daltonico main,
 html.a11y-daltonico footer{ filter: url(#filtro-deuteranopia); }
 
-html.a11y-leitor-tela .divisor i, html.a11y-leitor-tela .barber-pole{ display:none; }
-html.a11y-leitor-tela .card__icone{ display: none; }
-
 /* ---------- VIEWS ---------- */
 .view{ animation: aparecer .45s ease; }
 @keyframes aparecer{ from{ opacity:0; transform: translateY(8px);} to{ opacity:1; transform:none; } }
