@@ -1831,3 +1831,138 @@ html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-month-fie
 html:not(.tema-claro) .campo input[type="date"]::-webkit-datetime-edit-year-field{
   color: var(--ouro-claro);
 }
+
+/* ===========================================================
+   ALTO CONTRASTE — AMARELO E PRETO (máximo destaque)
+   -----------------------------------------------------------
+   Ativado pelo painel de acessibilidade (classe .a11y-contraste
+   na tag <html>). Ideia: fundo PRETO puro, texto BRANCO puro e
+   o AMARELO como cor única de destaque (títulos, botões, bordas,
+   links, ícones, foco e selos).
+
+   Por que este bloco fica no FIM do arquivo:
+     as regras do tema claro (html.tema-claro) vêm antes; como
+     aqui usamos a mesma especificidade e !important, estas
+     vencem — então o contraste funciona igual nos dois temas.
+   =========================================================== */
+
+html.a11y-contraste{
+  /* Tokens: amarelo sobre preto */
+  --ouro:#ffe000;
+  --ouro-forte:#ffe000;
+  --ouro-claro:#fff45c;
+  --bg-0:#000;
+  --bg-1:#000;
+  --bg-2:#000;
+  --bg-3:#000;
+  --texto:#ffffff;
+  --texto-fraco:#ffffff;
+  --texto-mais-fraco:#ffe000;
+  --borda:#ffe000;
+  --borda-forte:#ffe000;
+  color-scheme: dark;
+  background:#000 !important;
+}
+
+html.a11y-contraste body{
+  background:#000 !important;
+  color:#ffffff !important;
+}
+
+/* Superfícies: preto com borda amarela grossa (delimita bem os blocos) */
+html.a11y-contraste header,
+html.a11y-contraste footer,
+html.a11y-contraste .nav,
+html.a11y-contraste .card,
+html.a11y-contraste .cartao-auth,
+html.a11y-contraste .item-historico,
+html.a11y-contraste .stat-card,
+html.a11y-contraste .opcao-selecao,
+html.a11y-contraste .opcao-pagamento,
+html.a11y-contraste .painel-acessibilidade,
+html.a11y-contraste .modal,
+html.a11y-contraste table,
+html.a11y-contraste th,
+html.a11y-contraste td{
+  background:#000 !important;
+  border-color:#ffe000 !important;
+  color:#ffffff !important;
+}
+
+/* Títulos e rótulos em amarelo */
+html.a11y-contraste h1,
+html.a11y-contraste h2,
+html.a11y-contraste h3,
+html.a11y-contraste h4,
+html.a11y-contraste .titulo-secao,
+html.a11y-contraste .rotulo{
+  color:#ffe000 !important;
+}
+
+/* Links */
+html.a11y-contraste a{ color:#ffe000 !important; }
+
+/* Botões: amarelo sólido com texto PRETO (melhor legibilidade) */
+html.a11y-contraste .btn{
+  background:#ffe000 !important;
+  color:#000000 !important;
+  border:2px solid #ffe000 !important;
+  font-weight:800 !important;
+}
+html.a11y-contraste .btn--outline,
+html.a11y-contraste .btn--ghost{
+  background:#000000 !important;
+  color:#ffe000 !important;
+  border:2px solid #ffe000 !important;
+}
+html.a11y-contraste .btn *{ color:inherit !important; }
+html.a11y-contraste .btn:hover{ filter:brightness(1.15); }
+
+/* Campos de formulário */
+html.a11y-contraste input,
+html.a11y-contraste select,
+html.a11y-contraste textarea{
+  background:#000000 !important;
+  color:#ffffff !important;
+  border:2px solid #ffe000 !important;
+}
+html.a11y-contraste input::placeholder,
+html.a11y-contraste textarea::placeholder{ color:#cfcfcf !important; }
+
+/* Foco de teclado bem visível */
+html.a11y-contraste a:focus-visible,
+html.a11y-contraste button:focus-visible,
+html.a11y-contraste input:focus-visible,
+html.a11y-contraste select:focus-visible,
+html.a11y-contraste textarea:focus-visible{
+  outline:3px solid #ffe000 !important;
+  outline-offset:2px !important;
+}
+
+/* Selos de status: amarelo com texto preto */
+html.a11y-contraste .selo-status{
+  background:#ffe000 !important;
+  color:#000000 !important;
+  border:2px solid #ffe000 !important;
+}
+html.a11y-contraste .selo-status *{ color:inherit !important; }
+
+/* Botões flutuantes (tema e acessibilidade) continuam acháveis */
+html.a11y-contraste .fab-acessibilidade{
+  background:#ffe000 !important;
+  color:#000000 !important;
+  border:2px solid #000000 !important;
+}
+html.a11y-contraste .fab-tema{
+  background:#000000 !important;
+  color:#ffe000 !important;
+  border:2px solid #ffe000 !important;
+}
+
+/* Ícones decorativos e divisores em amarelo */
+html.a11y-contraste .divisor i,
+html.a11y-contraste .divisor span{ color:#ffe000 !important; }
+
+/* Gráficos */
+html.a11y-contraste .grafico-barras__trilha{ background:#3a3a3a !important; }
+html.a11y-contraste .grafico-barras__preenchimento{ background:#ffe000 !important; }
