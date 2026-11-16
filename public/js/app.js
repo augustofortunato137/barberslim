@@ -315,8 +315,7 @@
     'a11y-contraste': document.getElementById('toggle-contraste'),
     'a11y-texto-grande': document.getElementById('toggle-texto-grande'),
     'a11y-reduzir-movimento': document.getElementById('toggle-reduzir-movimento'),
-    'a11y-daltonico': document.getElementById('toggle-daltonico'),
-    'a11y-leitor-tela': document.getElementById('toggle-leitor-tela')
+    'a11y-daltonico': document.getElementById('toggle-daltonico')
   };
 
   function abrirPainelA11y() {
