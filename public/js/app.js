@@ -516,7 +516,7 @@
   });
 
   /* ---------------------------------------------------------
-     10) LOGIN (conta / visitante) e LOGIN ADMIN
+     10) LOGIN (conta) e LOGIN ADMIN
      --------------------------------------------------------- */
   document.querySelectorAll('.aba-auth').forEach(aba => {
     aba.addEventListener('click', function () {
@@ -563,20 +563,6 @@
     atualizarHeaderSessao();
     definirStatus('msg-login', 'Login realizado com sucesso!', 'sucesso');
     setTimeout(() => irPara('home'), 500);
-  });
-
-  document.getElementById('btn-entrar-visitante').addEventListener('click', function () {
-    ['erro-visitante-nome', 'erro-visitante-whatsapp'].forEach(id => mostrarErro(id, ''));
-    const nome = document.getElementById('visitante-nome').value.trim();
-    const whatsapp = document.getElementById('visitante-whatsapp').value.trim();
-    let valido = true;
-    if (nome.length < 2) { mostrarErro('erro-visitante-nome', 'Informe seu nome.'); valido = false; }
-    if (!whatsappValido(whatsapp)) { mostrarErro('erro-visitante-whatsapp', 'Informe um WhatsApp válido.'); valido = false; }
-    if (!valido) return;
-
-    setSessao({ tipo: 'visitante', userId: null, nome, whatsapp });
-    atualizarHeaderSessao();
-    irPara('agendamento');
   });
 
   document.getElementById('form-admin-login').addEventListener('submit', async function (e) {
@@ -842,7 +828,7 @@
 
   /* Handler do botão "Confirmar Agendamento".
      Passos:
-     1. Garante que há uma sessão válida (login ou visitante).
+     1. Garante que há uma sessão válida (login).
      2. Valida cada etapa (barbeiro, serviço, data, horário).
      3. Monta o objeto `agendamento` com todos os dados.
      4. Salva (no localStorage ou no banco via api.js).
@@ -851,7 +837,7 @@
     const sessao = getSessao();
     // Admin não agenda; e sem sessão manda para o login
     if (!sessao || sessao.tipo === 'admin') {
-      definirStatus('msg-agendamento', 'Faça login ou entre como visitante para agendar.', 'erro');
+      definirStatus('msg-agendamento', 'Faça login para agendar.', 'erro');
       irPara('login');
       return;
     }
