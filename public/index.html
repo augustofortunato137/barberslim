@@ -290,7 +290,7 @@
               <i class="fas fa-plus" aria-hidden="true"></i>
             </button>
             <div class="acordeao__resposta" hidden>
-              <p>Não. Você pode agendar como visitante informando só seu nome e WhatsApp. Criar conta é opcional e serve para acompanhar seu histórico de cortes.</p>
+              <p>Sim. O cadastro é rápido — e-mail, WhatsApp e senha — e serve para agendar e acompanhar seu histórico de cortes.</p>
             </div>
           </div>
           <div class="acordeao__item">
@@ -360,11 +360,6 @@
         <h2 class="titulo-secao titulo-secao--centro">Entrar</h2>
         <p class="texto-confianca"><i class="fas fa-lock" aria-hidden="true"></i> Seus dados ficam apenas na barbearia.</p>
 
-        <div class="abas-auth" role="tablist">
-          <button type="button" class="aba-auth is-ativa" data-aba="conta" role="tab" aria-selected="true">Já tenho conta</button>
-          <button type="button" class="aba-auth" data-aba="visitante" role="tab" aria-selected="false">Entrar como visitante</button>
-        </div>
-
         <div class="aba-conteudo" data-aba-conteudo="conta">
           <label class="campo">
             <span>E-mail</span>
@@ -384,20 +379,6 @@
             <span>Lembrar de mim</span>
           </label>
           <button type="submit" class="btn btn--gold btn--bloco">Entrar</button>
-        </div>
-
-        <div class="aba-conteudo" data-aba-conteudo="visitante" hidden>
-          <label class="campo">
-            <span>Nome</span>
-            <input type="text" name="nomeVisitante" id="visitante-nome">
-            <small class="erro" id="erro-visitante-nome" role="alert"></small>
-          </label>
-          <label class="campo">
-            <span>WhatsApp</span>
-            <input type="tel" name="whatsappVisitante" id="visitante-whatsapp" placeholder="(11) 90000-0000">
-            <small class="erro" id="erro-visitante-whatsapp" role="alert"></small>
-          </label>
-          <button type="button" class="btn btn--gold btn--bloco" id="btn-entrar-visitante">Continuar como visitante</button>
         </div>
 
         <p class="rodape-form">Não tem conta? <button type="button" class="link" data-nav="cadastro">Cadastre-se</button></p>
