@@ -306,22 +306,25 @@ app.get('/api/agendamentos', requireAuth, asyncRoute(async (req, res) => {
 }));
 
 /**
- * POST /api/agendamentos — cria um agendamento.
- * - Logado (cliente): associa ao usuário do token (ignora usuario_id do corpo).
- * - Visitante (sem login): exige nome + whatsapp e fica sem vínculo de conta.
- * Bloqueia horário já ocupado (409) e valida no servidor.
+ * POST /api/agendamentos — cria um agendamento. EXIGE LOGIN.
+ *
+ * Sem token válido a rota responde 401: visitantes não podem mais agendar.
+ * O dono do agendamento é sempre o usuário do token — nome e WhatsApp vêm do
+ * CADASTRO (banco), nunca do corpo da requisição.
+ * Bloqueia horário já ocupado (409) e valida tudo no servidor.
  */
-app.post('/api/agendamentos', limiteReserva, asyncRoute(async (req, res) => {
+app.post('/api/agendamentos', requireAuth, limiteReserva, asyncRoute(async (req, res) => {
   const d = req.body || {};
-  const claim = lerToken(req);   // pode ser null (visitante)
+  const claim = req.claim;   // garantido pelo requireAuth (sem token -> 401)
+
+  // Fonte da verdade: quem está agendando é o dono do token.
+  const usuario = await db.buscarUsuario(claim.id);
+  if (!usuario) return res.status(401).json({ erro: 'Sessão inválida. Entre novamente.' });
 
   // Normaliza e limita o tamanho dos campos (anti-payload gigante)
-  d.cliente_nome = String(d.cliente_nome || '').trim().slice(0, 80);
-  d.cliente_whatsapp = String(d.cliente_whatsapp || '').trim().slice(0, 20);
   d.barbeiro_nome = String(d.barbeiro_nome || '').slice(0, 60);
 
   // Validações comuns (formato estrito no servidor)
-  if (d.cliente_nome.length < 2) return res.status(400).json({ erro: 'Nome do cliente é obrigatório.' });
   if (!RE_BARBEIRO.test(String(d.barbeiro_id || ''))) return res.status(400).json({ erro: 'Selecione um barbeiro válido.' });
   if (!Array.isArray(d.servicos_ids) || d.servicos_ids.length === 0 || d.servicos_ids.length > 8) {
     return res.status(400).json({ erro: 'Selecione entre 1 e 8 serviços.' });
@@ -361,18 +364,15 @@ app.post('/api/agendamentos', limiteReserva, asyncRoute(async (req, res) => {
     return res.status(409).json({ erro: 'Este horário já foi reservado. Escolha outro.' });
   }
 
-  // Se logado, o usuário é definido pelo token (nunca pelo corpo).
-  const usuarioId = claim ? claim.id : null;
-  if (!usuarioId && String(d.cliente_whatsapp).replace(/\D/g, '').length < 10) {
-    return res.status(400).json({ erro: 'Informe um WhatsApp válido (visitante).' });
-  }
+  // O dono do agendamento é o usuário do token (nunca o corpo).
+  const usuarioId = claim.id;
 
   let criado;
   try {
     criado = await db.criarAgendamento({
       usuario_id: usuarioId,
-      cliente_nome: d.cliente_nome,
-      cliente_whatsapp: d.cliente_whatsapp || '',
+      cliente_nome: usuario.nome,
+      cliente_whatsapp: usuario.whatsapp || '',
       barbeiro_id: d.barbeiro_id,
       barbeiro_nome: barbeiroNome,
       servicos: servicosNomes,
