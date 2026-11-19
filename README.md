@@ -62,7 +62,7 @@ primeiro start via `schema.sql` + `database.js`.
 | GET | `/api/servicos` | catálogo público de serviços |
 | GET | `/api/agendamentos/ocupados?data=&barbeiro_id=` | horários já ocupados (público) |
 | GET | `/api/agendamentos` | exige login (admin: todos; cliente: só os dele) |
-| POST | `/api/agendamentos` | cria agendamento (logado ou visitante) |
+| POST | `/api/agendamentos` | cria agendamento (**exige login**) |
 | POST | `/api/agendamentos/:id/cancelar` | cancela (marca como cancelado e libera o horário) — dono ou admin |
 | GET | `/api/agendamentos/:id/pix` | dados do PIX — só o dono (ou admin) |
 | GET | `/api/agendamentos/:id/status` | status do agendamento — só o dono (ou admin) |
